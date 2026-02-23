@@ -22,15 +22,19 @@ export class UniversalDeviceCardEditor extends LitElement {
 
   async _loadTranslations() {
     const lang = this.hass?.language || 'en';
-    this._translations = DEFAULT_TRANSLATIONS[lang] || DEFAULT_TRANSLATIONS['en'];
+    const langAlias = { 'zh-Hant': 'zh-TW' };
+    const resolvedLang = langAlias[lang] || lang;
+    this._translations = DEFAULT_TRANSLATIONS[resolvedLang] || DEFAULT_TRANSLATIONS[lang] || DEFAULT_TRANSLATIONS['en'];
 
     try {
-      const response = await fetch(`${getTranslationBaseUrl()}${lang}.json`);
+      const baseUrl = getTranslationBaseUrl();
+      let response = await fetch(`${baseUrl}${lang}.json`);
+      if (!response.ok && lang !== resolvedLang) response = await fetch(`${baseUrl}${resolvedLang}.json`);
       if (response.ok) {
         const externalTranslations = await response.json();
         this._translations = { ...this._translations, ...externalTranslations };
       }
-    } catch (e) {}
+    } catch (_e) {}
     this.requestUpdate();
   }
 

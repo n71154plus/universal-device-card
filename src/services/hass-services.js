@@ -53,6 +53,9 @@ export function createHassServices(hass, entityId) {
     setCoverPosition(position) {
       hass.callService('cover', 'set_cover_position', { entity_id: main, position: parseInt(position) });
     },
+    setCoverTiltPosition(tiltPosition) {
+      hass.callService('cover', 'set_cover_tilt_position', { entity_id: main, tilt_position: parseInt(tiltPosition) });
+    },
     setVolume(volume) {
       hass.callService('media_player', 'volume_set', { entity_id: main, volume_level: volume / 100 });
     },

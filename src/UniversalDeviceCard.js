@@ -17,7 +17,13 @@ export class UniversalDeviceCard extends LitElement {
       _showTextPopup: { type: Boolean },
       _popupText: { type: String },
       _translations: { type: Object },
-      _fanModeExpanded: { type: Boolean }
+      _fanModeExpanded: { type: Boolean },
+      _massQueueItems: { type: Array },
+      _massQueueExpanded: { type: Boolean },
+      _massQueueLoading: { type: Boolean },
+      _massLibraryItems: { type: Array },
+      _massLibraryExpanded: { type: Boolean },
+      _massLibraryLoading: { type: Boolean }
     };
   }
 
@@ -31,6 +37,12 @@ export class UniversalDeviceCard extends LitElement {
     this._iconLongPressTimer = null;
     this._iconLongPressFired = false;
     this._iconLastTapTime = 0;
+    this._massQueueItems = [];
+    this._massQueueExpanded = false;
+    this._massQueueLoading = false;
+    this._massLibraryItems = [];
+    this._massLibraryExpanded = false;
+    this._massLibraryLoading = false;
   }
 
   async connectedCallback() {
@@ -93,19 +105,22 @@ export class UniversalDeviceCard extends LitElement {
   // ??航擗???刻麾
   async _loadTranslations() {
     const lang = this.config?.language || this.hass?.language || 'en';
-    
-    this._translations = DEFAULT_TRANSLATIONS[lang] || DEFAULT_TRANSLATIONS['en'];
-    
+    const langAlias = { 'zh-Hant': 'zh-TW' };
+    const resolvedLang = langAlias[lang] || lang;
+
+    this._translations = DEFAULT_TRANSLATIONS[resolvedLang] || DEFAULT_TRANSLATIONS[lang] || DEFAULT_TRANSLATIONS['en'];
+
     if (lang !== 'auto') {
       try {
-        const response = await fetch(`${getTranslationBaseUrl()}${lang}.json`);
+        const baseUrl = getTranslationBaseUrl();
+        let response = await fetch(`${baseUrl}${lang}.json`);
+        if (!response.ok && lang !== resolvedLang) response = await fetch(`${baseUrl}${resolvedLang}.json`);
         if (response.ok) {
           const externalTranslations = await response.json();
           this._translations = { ...this._translations, ...externalTranslations };
-          console.log(`Loaded external translations for ${lang}`);
         }
-      } catch (e) {
-        console.log(`Using default translations for ${lang}`);
+      } catch (_e) {
+        // 外載失敗時已使用內建 DEFAULT_TRANSLATIONS
       }
     }
   }
@@ -530,6 +545,199 @@ export class UniversalDeviceCard extends LitElement {
     this._services?.callService(domain, service);
   }
 
+  /** 是否為 Music Assistant 實體（有 mass_player_type 屬性） */
+  _isMusicAssistant(stateObj) {
+    return stateObj && stateObj.attributes && stateObj.attributes.mass_player_type != null;
+  }
+
+  /** 是否已安裝 mass_queue 且可取得佇列 */
+  _hasMassQueue() {
+    return this.hass?.services?.mass_queue?.['get_queue_items'] != null;
+  }
+
+  /** 取得 mass_queue 播放清單（需 SupportsResponse） */
+  async _fetchMassQueue() {
+    if (!this.config?.entity) return;
+    this._massQueueLoading = true;
+    this._massQueueItems = [];
+    this.requestUpdate('_massQueueLoading');
+    this.requestUpdate('_massQueueItems');
+    try {
+      // HA WebSocket API 使用 return_response，回傳在 result.response
+      let raw = null;
+      if (this.hass?.connection && typeof this.hass.connection.sendMessagePromise === 'function') {
+        const msg = await this.hass.connection.sendMessagePromise({
+          type: 'call_service',
+          domain: 'mass_queue',
+          service: 'get_queue_items',
+          service_data: { entity: this.config.entity },
+          return_response: true
+        });
+        raw = msg?.result?.response ?? msg?.response;
+      }
+      if (raw == null && typeof this.hass?.callService === 'function') {
+        const res = await this.hass.callService('mass_queue', 'get_queue_items', { entity: this.config.entity }, {}, true);
+        raw = res?.response ?? res?.result;
+      }
+      let items = [];
+      if (raw != null) {
+        if (Array.isArray(raw)) items = raw;
+        else if (raw && typeof raw === 'object' && raw[this.config.entity]) items = raw[this.config.entity];
+        else if (raw && typeof raw === 'object') items = Object.values(raw).flat();
+      }
+      this._massQueueItems = Array.isArray(items) ? items : [];
+    } catch (e) {
+      this._massQueueItems = [];
+    }
+    this._massQueueLoading = false;
+    this.requestUpdate('_massQueueItems');
+    this.requestUpdate('_massQueueLoading');
+  }
+
+  _toggleMassQueueExpand() {
+    this._massQueueExpanded = !this._massQueueExpanded;
+    if (this._massQueueExpanded && this._massQueueItems.length === 0 && !this._massQueueLoading) {
+      this._fetchMassQueue();
+    }
+    this.requestUpdate('_massQueueExpanded');
+  }
+
+  _playMassQueueItem(queueItemId) {
+    if (!this.hass || !this.config?.entity) return;
+    this.hass.callService('mass_queue', 'play_queue_item', {
+      entity: this.config.entity,
+      queue_item_id: queueItemId
+    });
+  }
+
+  /** 是否已安裝 music_assistant 且可取得 library */
+  _hasMusicAssistantLibrary() {
+    return this.hass?.services?.music_assistant?.['get_library'] != null;
+  }
+
+  /** 從 media_player 實體反查 music_assistant config_entry_id */
+  async _getMassConfigEntryId() {
+    // 0. 若 config 有手動指定，優先使用
+    if (this.config?.mass_config_entry_id) return this.config.mass_config_entry_id;
+    if (!this.hass?.connection || !this.config?.entity) return null;
+    try {
+      // 1. 從 entity registry 取得該實體的 config_entry_id
+      const entityMsg = await this.hass.connection.sendMessagePromise({
+        type: 'config/entity_registry/get',
+        entity_id: this.config.entity
+      });
+      const entityEntry = entityMsg?.result;
+      if (entityEntry?.config_entry_id) return entityEntry.config_entry_id;
+
+      // 2. 若 entity 無 config_entry_id，從 device 取得
+      const deviceId = entityEntry?.device_id;
+      if (deviceId) {
+        const deviceMsg = await this.hass.connection.sendMessagePromise({
+          type: 'config/device_registry/list'
+        });
+        const devices = deviceMsg?.result ?? [];
+        const device = Array.isArray(devices) ? devices.find(d => d.id === deviceId) : null;
+        const configEntries = device?.config_entries ?? [];
+        if (configEntries.length > 0) return configEntries[0];
+      }
+
+      // 3. Fallback: config_entries/get 可能不存在，僅在 try 內呼叫
+      try {
+        const entriesMsg = await this.hass.connection.sendMessagePromise({
+          type: 'config_entries/get',
+          domain: 'music_assistant'
+        });
+        const entries = entriesMsg?.result ?? [];
+        const first = Array.isArray(entries) && entries.length > 0 ? entries[0] : null;
+        return first?.entry_id ?? first ?? null;
+      } catch (_) {
+        return null;
+      }
+    } catch (_e) {
+      return null;
+    }
+  }
+
+  /** 取得 music_assistant 音樂資料庫（tracks / albums / artists / playlists） */
+  async _fetchMassLibrary() {
+    if (!this.config?.entity) return;
+    this._massLibraryLoading = true;
+    this._massLibraryItems = [];
+    this.requestUpdate('_massLibraryLoading');
+    this.requestUpdate('_massLibraryItems');
+    try {
+      const configEntryId = await this._getMassConfigEntryId();
+      if (!configEntryId) {
+        this._massLibraryItems = [];
+        return;
+      }
+      const allItems = [];
+      const typesToLoad = ['artist', 'album', 'playlist', 'track'];
+      const serviceData = { config_entry_id: configEntryId, limit: 30 };
+
+      const fetchOne = async (mt) => {
+        const data = { ...serviceData, media_type: mt };
+        if (this.hass?.connection && typeof this.hass.connection.sendMessagePromise === 'function') {
+          const msg = await this.hass.connection.sendMessagePromise({
+            type: 'call_service',
+            domain: 'music_assistant',
+            service: 'get_library',
+            service_data: data,
+            return_response: true
+          });
+          const raw = msg?.result?.response ?? msg?.response ?? msg?.result;
+          const items = raw?.items ?? (Array.isArray(raw) ? raw : []);
+          return Array.isArray(items) ? items.map(it => ({ ...it, media_type: mt })) : [];
+        }
+        if (typeof this.hass?.callService === 'function') {
+          const res = await this.hass.callService('music_assistant', 'get_library', data, {}, true);
+          const raw = res?.response ?? res?.result ?? res;
+          const items = raw?.items ?? (Array.isArray(raw) ? raw : []);
+          return Array.isArray(items) ? items.map(it => ({ ...it, media_type: mt })) : [];
+        }
+        return [];
+      };
+
+      for (const mt of typesToLoad) {
+        try {
+          const items = await fetchOne(mt);
+          allItems.push(...items);
+        } catch (_inner) {
+          // ignore single type failure
+        }
+      }
+      this._massLibraryItems = allItems;
+    } catch (_e) {
+      this._massLibraryItems = [];
+    } finally {
+      this._massLibraryLoading = false;
+      this.requestUpdate('_massLibraryItems');
+      this.requestUpdate('_massLibraryLoading');
+    }
+  }
+
+  _toggleMassLibraryExpand() {
+    this._massLibraryExpanded = !this._massLibraryExpanded;
+    if (this._massLibraryExpanded && this._massLibraryItems.length === 0 && !this._massLibraryLoading) {
+      this._fetchMassLibrary();
+    }
+    this.requestUpdate('_massLibraryExpanded');
+  }
+
+  _playMassLibraryItem(item) {
+    if (!this.hass || !this.config?.entity || !item?.uri) return;
+    this.hass.callService('music_assistant', 'play_media', {
+      entity_id: this.config.entity,
+      media_id: [item.uri],
+      media_type: item.media_type || 'track'
+    });
+  }
+
+  /** 是否為 MA 實體且可顯示 playlist/library（mass_queue 或 music_assistant） */
+  _showMassPlaylistOrLibrary(stateObj) {
+    return this._isMusicAssistant(stateObj) && (this._hasMassQueue() || this._hasMusicAssistantLibrary());
+  }
+
   _setSelect(entityId, option) {
     this._services?.setSelect(entityId, option);
   }
@@ -731,6 +939,13 @@ export class UniversalDeviceCard extends LitElement {
     const currentPosition = stateObj.attributes.current_position || 0;
     const newPosition = Math.max(0, Math.min(100, currentPosition + step));
     this._setCoverPosition(newPosition);
+  }
+
+  _adjustCoverTiltPosition(step) {
+    const stateObj = this.hass.states[this.config.entity];
+    const currentTilt = stateObj.attributes.current_tilt_position ?? 50;
+    const newTilt = Math.max(0, Math.min(100, currentTilt + step));
+    this._services?.setCoverTiltPosition(newTilt);
   }
 
   // Media Player ??對?

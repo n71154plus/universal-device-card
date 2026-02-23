@@ -7,7 +7,22 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
     const isBar = layout === 'bar';
     const isMini = layout === 'mini';
 
+    const libGroups = {
+      artist: [],
+      album: [],
+      playlist: [],
+      track: []
+    };
+    if (Array.isArray(card._massLibraryItems)) {
+      card._massLibraryItems.forEach((item) => {
+        const t = item.media_type;
+        if (libGroups[t]) libGroups[t].push(item);
+      });
+    }
+
     if (isBar) {
+      const volPercent = stateObj.attributes.volume_level !== undefined ? Math.round(stateObj.attributes.volume_level * 100) : 0;
+      const showMaButtons = card._showMassPlaylistOrLibrary(stateObj);
       return html`
         <div class="bar-content">
           <div class="bar-left">
@@ -23,24 +38,12 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
                 <button class="bar-btn" @click="${() => card._adjustVolume(-5)}">
                   <ha-icon icon="mdi:minus"></ha-icon>
                 </button>
-                <span class="bar-value">${Math.round(stateObj.attributes.volume_level * 100)}%</span>
+                <span class="bar-value">${volPercent}%</span>
                 <button class="bar-btn" @click="${() => card._adjustVolume(5)}">
                   <ha-icon icon="mdi:plus"></ha-icon>
                 </button>
               </div>
             ` : ''}
-            <div class="bar-controls">
-              <button class="bar-btn-small" @click="${() => card._callService('media_player', 'media_previous_track')}">
-                <ha-icon icon="mdi:skip-previous"></ha-icon>
-              </button>
-              <button class="bar-toggle ${state === 'playing' ? 'bar-toggle-on' : ''}" 
-                      @click="${() => card._callService('media_player', state === 'playing' ? 'media_pause' : 'media_play')}">
-                <ha-icon icon="mdi:${state === 'playing' ? 'pause' : 'play'}"></ha-icon>
-              </button>
-              <button class="bar-btn-small" @click="${() => card._callService('media_player', 'media_next_track')}">
-                <ha-icon icon="mdi:skip-next"></ha-icon>
-              </button>
-            </div>
             ${showPopupButton ? html`
               <button class="bar-settings" @click="${() => card._showPopup = true}">
                 <ha-icon icon="mdi:cog"></ha-icon>
@@ -48,11 +51,110 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
             ` : ''}
           </div>
         </div>
+
+        <div class="bar-modes">
+          <div class="bar-mode-chip" @click="${() => card._callService('media_player', 'media_previous_track')}">
+            <ha-icon icon="mdi:skip-previous"></ha-icon>
+          </div>
+          <div class="bar-mode-chip ${state === 'playing' ? 'active' : ''}"
+               @click="${() => card._callService('media_player', state === 'playing' ? 'media_pause' : 'media_play')}">
+            <ha-icon icon="mdi:${state === 'playing' ? 'pause' : 'play'}"></ha-icon>
+          </div>
+          <div class="bar-mode-chip" @click="${() => card._callService('media_player', 'media_next_track')}">
+            <ha-icon icon="mdi:skip-next"></ha-icon>
+          </div>
+          ${showMaButtons && card._hasMassQueue() ? html`
+            <div class="bar-mode-chip ${card._massQueueExpanded ? 'active' : ''}"
+                 @click="${() => card._toggleMassQueueExpand()}"
+                 title="${card._t('mass_queue_playlist')}">
+              <ha-icon icon="mdi:playlist-music"></ha-icon>
+            </div>
+          ` : ''}
+          ${showMaButtons && card._hasMusicAssistantLibrary() ? html`
+            <div class="bar-mode-chip ${card._massLibraryExpanded ? 'active' : ''}"
+                 @click="${() => card._toggleMassLibraryExpand()}"
+                 title="${card._t('mass_library')}">
+              <ha-icon icon="mdi:music-box-multiple"></ha-icon>
+            </div>
+          ` : ''}
+        </div>
+
+        ${card._isMusicAssistant(stateObj) && card._hasMassQueue() && card._massQueueExpanded ? html`
+          <div class="mass-queue-foldable">
+            <div class="mass-queue-list">
+              ${card._massQueueLoading && card._massQueueItems.length === 0
+                ? html`<div class="mass-queue-empty">${card._t('mass_queue_loading')}</div>`
+                : card._massQueueItems.length === 0
+                  ? html`<div class="mass-queue-empty">—</div>`
+                  : card._massQueueItems.map((item) => html`
+                    <button class="mass-queue-item" @click="${() => card._playMassQueueItem(item.queue_item_id)}">
+                      <div class="mass-queue-item-image">
+                        ${item.local_image_encoded
+                          ? html`<img src="data:image/jpeg;base64,${item.local_image_encoded}" alt="" />`
+                          : item.media_image
+                            ? html`<img src="${item.media_image}" alt="" />`
+                            : html`<ha-icon icon="mdi:music"></ha-icon>`}
+                      </div>
+                      <div class="mass-queue-item-info">
+                        <span class="mass-queue-item-title">${item.media_title || '—'}</span>
+                        ${item.media_artist ? html`<span class="mass-queue-item-artist">${item.media_artist}</span>` : ''}
+                        ${item.media_album_name ? html`<span class="mass-queue-item-album">${item.media_album_name}</span>` : ''}
+                      </div>
+                      <ha-icon class="mass-queue-item-play" icon="mdi:play-circle-outline"></ha-icon>
+                    </button>
+                  `)}
+            </div>
+          </div>
+        ` : ''}
+
+        ${card._isMusicAssistant(stateObj) && card._hasMusicAssistantLibrary() && card._massLibraryExpanded ? html`
+          <div class="mass-queue-foldable">
+            <div class="mass-library-section">
+              ${card._massLibraryLoading && card._massLibraryItems.length === 0
+                ? html`<div class="mass-queue-empty">${card._t('mass_library_loading')}</div>`
+                : card._massLibraryItems.length === 0
+                  ? html`<div class="mass-queue-empty">—</div>`
+                  : ['artist', 'album', 'playlist', 'track'].map((type) => {
+                      const items = libGroups[type] || [];
+                      if (!items.length) return '';
+                      return html`
+                        <div class="mass-library-row">
+                          <div class="mass-library-row-title">${type.toUpperCase()}</div>
+                          <div class="mass-library-row-scroll">
+                            ${items.map((item) => {
+                              const img = item.image || item.album?.image;
+                              const artistNames = item.artists?.map(a => a.name).filter(Boolean).join(', ') || '';
+                              const albumName = item.album?.name || '';
+                              return html`
+                                <button class="mass-library-chip" @click="${() => card._playMassLibraryItem(item)}">
+                                  <div class="mass-library-chip-image">
+                                    ${img ? html`<img src="${img}" alt="" />` : html`<ha-icon icon="mdi:music"></ha-icon>`}
+                                  </div>
+                                  <div class="mass-library-chip-text">
+                                    <span class="mass-library-chip-title">${item.name || '—'}</span>
+                                    ${artistNames || albumName ? html`
+                                      <span class="mass-library-chip-sub">
+                                        ${artistNames || albumName}
+                                      </span>
+                                    ` : ''}
+                                  </div>
+                                </button>
+                              `;
+                            })}
+                          </div>
+                        </div>
+                      `;
+                    })}
+            </div>
+          </div>
+        ` : ''}
+
         ${card._renderMainButtons(layout)}
       `;
     }
 
     const volPercent = stateObj.attributes.volume_level !== undefined ? Math.round(stateObj.attributes.volume_level * 100) : 0;
+    const showMaButtons = card._showMassPlaylistOrLibrary(stateObj);
     return html`
       <div class="header ${isMini ? 'header-mini' : ''}">
         ${card._renderHeaderIcon(stateObj, isMini)}
@@ -60,6 +162,16 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
           ${card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
           ${title ? html`<span class="device-value">${card._renderTitle(title, layout, 28)}</span>` : ''}
         </div>
+        ${showMaButtons && card._hasMassQueue() ? html`
+          <button class="header-action" @click="${() => card._toggleMassQueueExpand()}">
+            <ha-icon icon="mdi:playlist-music"></ha-icon>
+          </button>
+        ` : ''}
+        ${showMaButtons && card._hasMusicAssistantLibrary() ? html`
+          <button class="header-action" @click="${() => card._toggleMassLibraryExpand()}">
+            <ha-icon icon="mdi:music-box-multiple"></ha-icon>
+          </button>
+        ` : ''}
         ${card._renderHeaderAction(showPopupButton)}
       </div>
 
@@ -92,6 +204,76 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
           <button class="adj-btn ${isMini ? 'adj-btn-mini' : ''}" @click="${() => card._adjustVolume(5)}">
             <ha-icon icon="mdi:plus"></ha-icon>
           </button>
+        </div>
+      ` : ''}
+
+      ${card._isMusicAssistant(stateObj) && card._hasMassQueue() && card._massQueueExpanded ? html`
+        <div class="mass-queue-foldable">
+          <div class="mass-queue-list">
+            ${card._massQueueLoading && card._massQueueItems.length === 0
+              ? html`<div class="mass-queue-empty">${card._t('mass_queue_loading')}</div>`
+              : card._massQueueItems.length === 0
+                ? html`<div class="mass-queue-empty">—</div>`
+                : card._massQueueItems.map((item) => html`
+                  <button class="mass-queue-item" @click="${() => card._playMassQueueItem(item.queue_item_id)}">
+                    <div class="mass-queue-item-image">
+                      ${item.local_image_encoded
+                        ? html`<img src="data:image/jpeg;base64,${item.local_image_encoded}" alt="" />`
+                        : item.media_image
+                          ? html`<img src="${item.media_image}" alt="" />`
+                          : html`<ha-icon icon="mdi:music"></ha-icon>`}
+                    </div>
+                    <div class="mass-queue-item-info">
+                      <span class="mass-queue-item-title">${item.media_title || '—'}</span>
+                      ${item.media_artist ? html`<span class="mass-queue-item-artist">${item.media_artist}</span>` : ''}
+                      ${item.media_album_name ? html`<span class="mass-queue-item-album">${item.media_album_name}</span>` : ''}
+                    </div>
+                    <ha-icon class="mass-queue-item-play" icon="mdi:play-circle-outline"></ha-icon>
+                  </button>
+                `)}
+          </div>
+        </div>
+      ` : ''}
+
+      ${card._isMusicAssistant(stateObj) && card._hasMusicAssistantLibrary() && card._massLibraryExpanded ? html`
+        <div class="mass-queue-foldable">
+          <div class="mass-library-section">
+            ${card._massLibraryLoading && card._massLibraryItems.length === 0
+              ? html`<div class="mass-queue-empty">${card._t('mass_library_loading')}</div>`
+              : card._massLibraryItems.length === 0
+                ? html`<div class="mass-queue-empty">—</div>`
+                : ['artist', 'album', 'playlist', 'track'].map((type) => {
+                    const items = libGroups[type] || [];
+                    if (!items.length) return '';
+                    return html`
+                      <div class="mass-library-row">
+                        <div class="mass-library-row-title">${type.toUpperCase()}</div>
+                        <div class="mass-library-row-scroll">
+                          ${items.map((item) => {
+                            const img = item.image || item.album?.image;
+                            const artistNames = item.artists?.map(a => a.name).filter(Boolean).join(', ') || '';
+                            const albumName = item.album?.name || '';
+                            return html`
+                              <button class="mass-library-chip" @click="${() => card._playMassLibraryItem(item)}">
+                                <div class="mass-library-chip-image">
+                                  ${img ? html`<img src="${img}" alt="" />` : html`<ha-icon icon="mdi:music"></ha-icon>`}
+                                </div>
+                                <div class="mass-library-chip-text">
+                                  <span class="mass-library-chip-title">${item.name || '—'}</span>
+                                  ${artistNames || albumName ? html`
+                                    <span class="mass-library-chip-sub">
+                                      ${artistNames || albumName}
+                                    </span>
+                                  ` : ''}
+                                </div>
+                              </button>
+                            `;
+                          })}
+                        </div>
+                      </div>
+                    `;
+                  })}
+          </div>
         </div>
       ` : ''}
 

@@ -867,6 +867,210 @@ export const cardStyles = css`
         transform: scale(1.1);
       }
 
+      /* Music Assistant 播放清單 (mass_queue) */
+      .mass-queue-foldable {
+        margin-top: 16px;
+        border-radius: 12px;
+        background: rgba(var(--rgb-primary-text-color), 0.06);
+        overflow: hidden;
+      }
+      .mass-queue-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px 14px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        text-align: left;
+        transition: background 0.2s;
+      }
+      .mass-queue-header:hover {
+        background: rgba(var(--rgb-primary-text-color), 0.08);
+      }
+      .mass-queue-header ha-icon {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+      }
+      .mass-queue-loading {
+        margin-left: auto;
+        font-size: 0.85rem;
+        font-weight: 500;
+        opacity: 0.7;
+      }
+      .mass-queue-list {
+        max-height: 280px;
+        overflow-y: auto;
+        padding: 0 8px 8px;
+      }
+      .mass-queue-empty {
+        padding: 16px;
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+      .mass-queue-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 10px 12px;
+        margin-bottom: 4px;
+        border: none;
+        border-radius: 10px;
+        background: rgba(var(--rgb-primary-text-color), 0.05);
+        cursor: pointer;
+        text-align: left;
+        transition: background 0.2s;
+      }
+      .mass-queue-item:hover {
+        background: rgba(var(--rgb-primary-text-color), 0.12);
+      }
+      .mass-queue-item-image {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: rgba(var(--rgb-primary-text-color), 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mass-queue-item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .mass-queue-item-image ha-icon {
+        width: 28px;
+        height: 28px;
+        opacity: 0.6;
+      }
+      .mass-queue-item-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .mass-queue-item-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .mass-queue-item-artist,
+      .mass-queue-item-album {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .mass-queue-item-play {
+        flex-shrink: 0;
+        width: 28px;
+        height: 28px;
+        opacity: 0.7;
+      }
+
+      /* Music Assistant 資料庫列 (Library) */
+      .mass-library-section {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 8px 8px 10px;
+      }
+      .mass-library-row {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .mass-library-row-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        opacity: 0.7;
+        padding: 0 4px;
+      }
+      .mass-library-row-scroll {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 2px 2px 6px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      .mass-library-row-scroll::-webkit-scrollbar {
+        display: none;
+      }
+      .mass-library-chip {
+        flex: 0 0 auto;
+        min-width: 90px;
+        max-width: 120px;
+        border-radius: 12px;
+        padding: 6px;
+        border: none;
+        background: rgba(var(--rgb-primary-text-color), 0.05);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        text-align: left;
+        transition: background 0.2s, transform 0.2s;
+      }
+      .mass-library-chip:hover {
+        background: rgba(var(--rgb-primary-text-color), 0.1);
+        transform: translateY(-1px);
+      }
+      .mass-library-chip-image {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 10px;
+        overflow: hidden;
+        background: rgba(var(--rgb-primary-text-color), 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mass-library-chip-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .mass-library-chip-image ha-icon {
+        width: 28px;
+        height: 28px;
+        opacity: 0.7;
+      }
+      .mass-library-chip-text {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .mass-library-chip-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .mass-library-chip-sub {
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
       /* Vacuum */
       .vacuum-status {
         display: flex;

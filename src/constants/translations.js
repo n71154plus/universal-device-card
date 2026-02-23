@@ -12,6 +12,9 @@ export const DEFAULT_TRANSLATIONS = {
     target_temp: '目標溫度',
     target_humidity: '目標濕度',
     position: '位置',
+    tilt: '傾斜',
+    open_tilt: '開啟傾斜',
+    close_tilt: '關閉傾斜',
     open: '開啟',
     close: '關閉',
     stop: '停止',
@@ -53,12 +56,19 @@ export const DEFAULT_TRANSLATIONS = {
     editor_exclude_entities: '排除的實體 ID',
     editor_include_entities: '僅包含的實體 ID',
     editor_exclude_sensor_classes: '排除的 Sensor Device Class',
-    editor_include_sensor_classes: '僅包含的 Sensor Device Class'
+    editor_include_sensor_classes: '僅包含的 Sensor Device Class',
+    mass_queue_playlist: '播放清單',
+    mass_queue_loading: '載入中…',
+    mass_library: '音樂資料庫',
+    mass_library_loading: '載入中…'
   },
   'zh-CN': {
     target_temp: '目标温度',
     target_humidity: '目标湿度',
     position: '位置',
+    tilt: '倾斜',
+    open_tilt: '开启倾斜',
+    close_tilt: '关闭倾斜',
     open: '打开',
     close: '关闭',
     stop: '停止',
@@ -100,12 +110,19 @@ export const DEFAULT_TRANSLATIONS = {
     editor_exclude_entities: '排除的实体 ID',
     editor_include_entities: '仅包含的实体 ID',
     editor_exclude_sensor_classes: '排除的 Sensor Device Class',
-    editor_include_sensor_classes: '仅包含的 Sensor Device Class'
+    editor_include_sensor_classes: '仅包含的 Sensor Device Class',
+    mass_queue_playlist: '播放列表',
+    mass_queue_loading: '加载中…',
+    mass_library: '音乐资料库',
+    mass_library_loading: '加载中…'
   },
   'en': {
     target_temp: 'Target Temp',
     target_humidity: 'Target Humidity',
     position: 'Position',
+    tilt: 'Tilt',
+    open_tilt: 'Open Tilt',
+    close_tilt: 'Close Tilt',
     open: 'Open',
     close: 'Close',
     stop: 'Stop',
@@ -147,12 +164,19 @@ export const DEFAULT_TRANSLATIONS = {
     editor_exclude_entities: 'Exclude Entity IDs',
     editor_include_entities: 'Include Entity IDs Only',
     editor_exclude_sensor_classes: 'Exclude Sensor Classes',
-    editor_include_sensor_classes: 'Include Sensor Classes Only'
+    editor_include_sensor_classes: 'Include Sensor Classes Only',
+    mass_queue_playlist: 'Queue',
+    mass_queue_loading: 'Loading…',
+    mass_library: 'Library',
+    mass_library_loading: 'Loading…'
   },
   'ja': {
     target_temp: '目標温度',
     target_humidity: '目標湿度',
     position: '位置',
+    tilt: '傾斜',
+    open_tilt: '傾斜を開く',
+    close_tilt: '傾斜を閉じる',
     open: '開く',
     close: '閉じる',
     stop: '停止',
@@ -194,6 +218,10 @@ export const DEFAULT_TRANSLATIONS = {
     editor_exclude_entities: '除外するエンティティID',
     editor_include_entities: '含めるエンティティIDのみ',
     editor_exclude_sensor_classes: '除外するセンサークラス',
-    editor_include_sensor_classes: '含めるセンサークラスのみ'
+    editor_include_sensor_classes: '含めるセンサークラスのみ',
+    mass_queue_playlist: '再生リスト',
+    mass_queue_loading: '読み込み中…',
+    mass_library: '音楽ライブラリ',
+    mass_library_loading: '読み込み中…'
   }
 };
