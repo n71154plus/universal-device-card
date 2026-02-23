@@ -13,9 +13,7 @@ export function renderFan(card, stateObj, layout = 'standard', showPopupButton =
       return html`
         <div class="bar-content">
           <div class="bar-left">
-            <div class="bar-icon ${isOn ? 'bar-icon-on' : ''}">
-              <ha-icon icon="mdi:fan"></ha-icon>
-            </div>
+            ${card._renderBarIcon(stateObj, isOn ? 'bar-icon-on' : '')}
             <div class="bar-info">
               <div class="bar-name">${card._renderTitle(stateObj.attributes.friendly_name, layout)}</div>
               <div class="bar-state">${isOn ? `${speed}%` : card._t('off')}</div>
@@ -64,8 +62,10 @@ export function renderFan(card, stateObj, layout = 'standard', showPopupButton =
 
     return html`
       <div class="header ${isMini ? 'header-mini' : ''}">
-        <div class="${isOn ? 'current-temp' : 'device-name'} ${isMini ? 'current-temp-mini' : ''} ${!isOn ? 'device-name-mini' : ''}">
-          ${isOn ? html`${speed}<span class="unit">%</span>` : card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
+        ${card._renderHeaderIcon(stateObj, isMini)}
+        <div class="device-name ${isMini ? 'device-name-mini' : ''}">
+          ${card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
+          <span class="device-value">${isOn ? `${speed}%` : card._t('off')}</span>
         </div>
         ${card._renderHeaderAction(showPopupButton)}
       </div>

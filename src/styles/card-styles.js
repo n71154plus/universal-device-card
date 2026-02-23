@@ -23,12 +23,97 @@ export const cardStyles = css`
         justify-content: space-between; 
         align-items: center;
         margin-bottom: 16px;
+        gap: 12px;
+      }
+
+      .header-icon {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 50%;
+        transition: background 0.2s, transform 0.2s;
+      }
+
+      .header-icon:hover {
+        background: rgba(var(--rgb-primary-text-color), 0.08);
+      }
+
+      .header-icon:active {
+        transform: scale(0.95);
+      }
+
+      .header-icon.icon-longpress-active,
+      .bar-icon.icon-longpress-active {
+        transform: scale(0.92);
+        animation: icon-longpress-pulse 0.2s ease-out;
+      }
+
+      @keyframes icon-longpress-pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.85; }
+        100% { opacity: 1; }
+      }
+
+      .header-icon ha-icon {
+        width: 28px;
+        height: 28px;
+      }
+
+      .header-icon-mini {
+        width: 32px;
+        height: 32px;
+      }
+
+      .header-icon-mini ha-icon {
+        width: 22px;
+        height: 22px;
+      }
+
+      .header > .current-temp,
+      .header > .device-name,
+      .header .title-scroll-wrap {
+        flex: 1;
+        min-width: 0;
       }
       
       .device-name {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         font-weight: 700;
         color: var(--text-primary);
+        min-width: 0;
+      }
+
+      .device-value {
+        font-size: 0.8rem;
+        font-weight: 500;
+        opacity: 0.78;
+        display: block;
+        margin-top: 2px;
+      }
+
+      /* 標題過長時水平捲動，不裁切 */
+      .title-scroll-wrap {
+        display: block;
+        overflow-x: auto;
+        overflow-y: hidden;
+        max-width: 100%;
+        min-width: 0;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-behavior: smooth;
+      }
+
+      .title-scroll-wrap::-webkit-scrollbar {
+        display: none;
+      }
+
+      .title-text {
+        white-space: nowrap;
+        display: inline-block;
       }
 
       /* ===== 統一佈局系統 ===== */
@@ -909,6 +994,15 @@ export const cardStyles = css`
         font-size: 1.5rem;
         flex-shrink: 0;
         transition: all 0.3s;
+        cursor: pointer;
+      }
+
+      .bar-icon:hover {
+        background: rgba(var(--rgb-primary-text-color), 0.12);
+      }
+
+      .bar-icon:active {
+        transform: scale(0.95);
       }
 
       .bar-icon-on {
@@ -926,10 +1020,26 @@ export const cardStyles = css`
 
       .bar-name {
         font-weight: 700;
-        font-size: 0.95rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-size: 0.85rem;
+        min-width: 0;
+      }
+
+      .bar-name .title-scroll-wrap {
+        display: block;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-behavior: smooth;
+      }
+
+      .bar-name .title-scroll-wrap::-webkit-scrollbar {
+        display: none;
+      }
+
+      .bar-name .title-text {
         white-space: nowrap;
+        display: inline-block;
       }
 
       .bar-state {
@@ -1039,7 +1149,7 @@ export const cardStyles = css`
       }
 
       .device-name-mini {
-        font-size: 1.1rem !important;
+        font-size: 1rem !important;
       }
 
       .current-temp-mini {

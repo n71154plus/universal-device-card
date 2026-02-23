@@ -8,9 +8,7 @@ export function renderGeneric(card, stateObj, layout = 'standard', showPopupButt
       return html`
         <div class="bar-content">
           <div class="bar-left">
-            <div class="bar-icon">
-              <ha-icon icon="mdi:devices"></ha-icon>
-            </div>
+            ${card._renderBarIcon(stateObj, '')}
             <div class="bar-info">
               <div class="bar-name">${card._renderTitle(stateObj.attributes.friendly_name, layout)}</div>
               <div class="bar-state">${stateObj.state}</div>
@@ -30,8 +28,10 @@ export function renderGeneric(card, stateObj, layout = 'standard', showPopupButt
 
     return html`
       <div class="header ${isMini ? 'header-mini' : ''}">
+        ${card._renderHeaderIcon(stateObj, isMini)}
         <div class="device-name ${isMini ? 'device-name-mini' : ''}">
           ${card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
+          <span class="device-value">${stateObj.state}</span>
         </div>
         ${card._renderHeaderAction(showPopupButton)}
       </div>

@@ -10,9 +10,7 @@ export function renderCover(card, stateObj, layout = 'standard', showPopupButton
       return html`
         <div class="bar-content">
           <div class="bar-left">
-            <div class="bar-icon">
-              <ha-icon icon="mdi:window-shutter"></ha-icon>
-            </div>
+            ${card._renderBarIcon(stateObj, '')}
             <div class="bar-info">
               <div class="bar-name">${card._renderTitle(stateObj.attributes.friendly_name, layout)}</div>
               <div class="bar-state">${position}%</div>
@@ -53,8 +51,10 @@ export function renderCover(card, stateObj, layout = 'standard', showPopupButton
 
     return html`
       <div class="header ${isMini ? 'header-mini' : ''}">
-        <div class="${stateObj.attributes.current_position !== undefined ? 'current-temp' : 'device-name'} ${isMini ? 'current-temp-mini' : ''} ${stateObj.attributes.current_position === undefined ? 'device-name-mini' : ''}">
-          ${stateObj.attributes.current_position !== undefined ? html`${position}<span class="unit">%</span>` : card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
+        ${card._renderHeaderIcon(stateObj, isMini)}
+        <div class="device-name ${isMini ? 'device-name-mini' : ''}">
+          ${card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
+          ${stateObj.attributes.current_position !== undefined ? html`<span class="device-value">${position}%</span>` : ''}
         </div>
         ${card._renderHeaderAction(showPopupButton)}
       </div>

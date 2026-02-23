@@ -28,6 +28,9 @@ export class UniversalDeviceCard extends LitElement {
     this._popupText = '';
     this._translations = {};
     this._fanModeExpanded = false;
+    this._iconLongPressTimer = null;
+    this._iconLongPressFired = false;
+    this._iconLastTapTime = 0;
   }
 
   async connectedCallback() {
@@ -430,24 +433,14 @@ export class UniversalDeviceCard extends LitElement {
     `;
   }
 
-  // ????????蹓遴??軋秧????
+  /** 標題：過長時以水平捲動顯示完整文字，不裁切 */
   _renderTitle(text, layout, maxLength = 20) {
     if (!text) return '';
-    
-    const isTruncated = (layout === 'mini' || layout === 'bar') && text.length > maxLength;
-    const displayText = isTruncated ? text.substring(0, maxLength) + '...' : text;
-    
-    if (isTruncated) {
-      return html`
-        <span class="truncated-text" 
-              @click="${() => this._showTextDialog(text)}" 
-              title="${this._t('click_to_view')}">
-          ${displayText}
-        </span>
-      `;
-    }
-    
-    return html`<span>${displayText}</span>`;
+    return html`
+      <span class="title-scroll-wrap" title="${text}">
+        <span class="title-text">${text}</span>
+      </span>
+    `;
   }
 
   _renderPopup() {
@@ -549,14 +542,120 @@ export class UniversalDeviceCard extends LitElement {
     this._services?.pressButton(entityId);
   }
 
-  // ?輯???more-info ??摨?  // ?? header action ?謘?
+  /** 開啟 HA 原生 more-info 對話框 */
+  _openMoreInfo() {
+    this.dispatchEvent(new CustomEvent('hass-more-info', {
+      bubbles: true,
+      composed: true,
+      detail: { entityId: this.config.entity }
+    }));
+  }
+
+  /** 觸覺／振動回饋（長按或雙擊時，與 HA 原生行為一致） */
+  _fireHaptic(type = 'medium') {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(type === 'heavy' ? [20, 40, 20] : [15, 30, 15]);
+    }
+    this.dispatchEvent(new CustomEvent('haptic', {
+      bubbles: true,
+      composed: true,
+      detail: { type }
+    }));
+  }
+
+  _onIconPointerDown(ev) {
+    this._iconLongPressFired = false;
+    this._iconLongPressTarget = ev.currentTarget;
+    this._iconLongPressTimer = setTimeout(() => {
+      this._iconLongPressTimer = null;
+      this._iconLongPressFired = true;
+      this._fireHaptic('medium');
+      if (this._iconLongPressTarget) {
+        this._iconLongPressTarget.classList.add('icon-longpress-active');
+        setTimeout(() => {
+          if (this._iconLongPressTarget) this._iconLongPressTarget.classList.remove('icon-longpress-active');
+        }, 200);
+      }
+      this._openMoreInfo();
+    }, 500);
+  }
+
+  _onIconPointerUp() {
+    if (this._iconLongPressTimer) {
+      clearTimeout(this._iconLongPressTimer);
+      this._iconLongPressTimer = null;
+    }
+    this._iconLongPressTarget = null;
+    if (this._iconLongPressFired) {
+      this._iconLongPressFired = false;
+      return;
+    }
+    const now = Date.now();
+    if (this._iconLastTapTime && now - this._iconLastTapTime < 400) {
+      this._iconLastTapTime = 0;
+      this._fireHaptic('light');
+      this._openMoreInfo();
+      return;
+    }
+    this._iconLastTapTime = now;
+    this._toggleEntity();
+  }
+
+  _onIconPointerLeave() {
+    if (this._iconLongPressTimer) {
+      clearTimeout(this._iconLongPressTimer);
+      this._iconLongPressTimer = null;
+    }
+    this._iconLongPressTarget = null;
+  }
+
+  /** 左上角實體圖示：tap=toggle, long press=more-info, double tap=more-info（與 HA 原生卡片一致） */
+  _renderHeaderIcon(stateObj, isMini = false) {
+    if (!stateObj) return '';
+    const domain = this._getDeviceType();
+    const icon = stateObj.attributes?.icon || getDomainIcon(domain);
+    const bgColor = getStateColor(domain, stateObj.state);
+    const iconColor = (bgColor && bgColor !== 'var(--ha-card-background)' && bgColor.startsWith('rgba'))
+      ? bgColor.replace(/[\d.]+\)$/, '1)')
+      : '';
+    return html`
+      <div class="header-icon ${isMini ? 'header-icon-mini' : ''} entity-icon-action"
+           style="${iconColor ? `color: ${iconColor}` : ''}"
+           @pointerdown="${(e) => this._onIconPointerDown(e)}"
+           @pointerup="${this._onIconPointerUp.bind(this)}"
+           @pointerleave="${this._onIconPointerLeave.bind(this)}"
+           @pointercancel="${this._onIconPointerLeave.bind(this)}"
+           @click="${(e) => { e.preventDefault(); e.stopPropagation(); }}"
+           title="${this._t('device')}">
+        <ha-icon icon="${icon}"></ha-icon>
+      </div>
+    `;
+  }
+
+  /** Bar layout 左側實體圖示：與 header 相同 tap=toggle, long press=more-info, double tap=more-info */
+  _renderBarIcon(stateObj, extraClass = '') {
+    if (!stateObj) return '';
+    const domain = this._getDeviceType();
+    const icon = stateObj.attributes?.icon || getDomainIcon(domain);
+    return html`
+      <div class="bar-icon entity-icon-action ${extraClass}"
+           @pointerdown="${(e) => this._onIconPointerDown(e)}"
+           @pointerup="${this._onIconPointerUp.bind(this)}"
+           @pointerleave="${this._onIconPointerLeave.bind(this)}"
+           @pointercancel="${this._onIconPointerLeave.bind(this)}"
+           @click="${(e) => { e.preventDefault(); e.stopPropagation(); }}"
+           title="${this._t('device')}">
+        <ha-icon icon="${icon}"></ha-icon>
+      </div>
+    `;
+  }
+
   _renderHeaderAction(showPopupButton = true) {
     if (!showPopupButton) return '';
-    
     return html`
       <div class="header-action" 
            @click="${() => this._showPopup = true}"
-           title="?桀??">
+           title="${this._t('device')}">
         <ha-icon icon="mdi:tune-variant"></ha-icon>
       </div>
     `;

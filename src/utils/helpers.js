@@ -11,7 +11,11 @@ export function getDomainIcon(domain) {
     button: 'mdi:gesture-tap',
     climate: 'mdi:thermostat',
     cover: 'mdi:window-shutter',
-    lock: 'mdi:lock'
+    lock: 'mdi:lock',
+    humidifier: 'mdi:air-humidifier',
+    media_player: 'mdi:play-circle',
+    vacuum: 'mdi:robot-vacuum',
+    water_heater: 'mdi:water-thermometer'
   };
   return icons[domain] || 'mdi:circle-outline';
 }

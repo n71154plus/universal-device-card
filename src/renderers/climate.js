@@ -11,9 +11,7 @@ export function renderClimate(card, stateObj, layout = 'standard', showPopupButt
       return html`
         <div class="bar-content">
           <div class="bar-left">
-            <div class="bar-icon">
-              <ha-icon icon="mdi:thermostat"></ha-icon>
-            </div>
+            ${card._renderBarIcon(stateObj, '')}
             <div class="bar-info">
               <div class="bar-name">${card._renderTitle(stateObj.attributes.friendly_name, layout)}</div>
               <div class="bar-state">${cur}°C → ${target}°C</div>
@@ -73,7 +71,11 @@ export function renderClimate(card, stateObj, layout = 'standard', showPopupButt
 
     return html`
       <div class="header ${isMini ? 'header-mini' : ''}">
-        <div class="current-temp ${isMini ? 'current-temp-mini' : ''}">${cur}<span class="unit">°C</span></div>
+        ${card._renderHeaderIcon(stateObj, isMini)}
+        <div class="device-name ${isMini ? 'device-name-mini' : ''}">
+          ${card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
+          <span class="device-value">${cur}°C → ${target}°C</span>
+        </div>
         ${card._renderHeaderAction(showPopupButton)}
       </div>
 

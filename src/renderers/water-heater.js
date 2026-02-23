@@ -10,9 +10,7 @@ export function renderWaterHeater(card, stateObj, layout = 'standard', showPopup
       return html`
         <div class="bar-content">
           <div class="bar-left">
-            <div class="bar-icon">
-              <ha-icon icon="mdi:water-boiler"></ha-icon>
-            </div>
+            ${card._renderBarIcon(stateObj, '')}
             <div class="bar-info">
               <div class="bar-name">${card._renderTitle(stateObj.attributes.friendly_name, layout)}</div>
               <div class="bar-state">${currentTemp}°C → ${temperature}°C</div>
@@ -40,7 +38,11 @@ export function renderWaterHeater(card, stateObj, layout = 'standard', showPopup
 
     return html`
       <div class="header ${isMini ? 'header-mini' : ''}">
-        <div class="current-temp ${isMini ? 'current-temp-mini' : ''}">${currentTemp}<span class="unit">°C</span></div>
+        ${card._renderHeaderIcon(stateObj, isMini)}
+        <div class="device-name ${isMini ? 'device-name-mini' : ''}">
+          ${card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
+          <span class="device-value">${currentTemp}°C → ${temperature}°C</span>
+        </div>
         ${card._renderHeaderAction(showPopupButton)}
       </div>
 

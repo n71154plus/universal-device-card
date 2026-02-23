@@ -12,9 +12,7 @@ export function renderLight(card, stateObj, layout = 'standard', showPopupButton
       return html`
         <div class="bar-content">
           <div class="bar-left">
-            <div class="bar-icon ${isOn ? 'bar-icon-on' : ''}">
-              <ha-icon icon="mdi:lightbulb${isOn ? '' : '-outline'}"></ha-icon>
-            </div>
+            ${card._renderBarIcon(stateObj, isOn ? 'bar-icon-on' : '')}
             <div class="bar-info">
               <div class="bar-name">${card._renderTitle(stateObj.attributes.friendly_name, layout)}</div>
               ${isOn && hasBrightness ? html`
@@ -53,11 +51,10 @@ export function renderLight(card, stateObj, layout = 'standard', showPopupButton
     // Standard/Mini：與 climate 一致 — header + main-control + temp-control
     return html`
       <div class="header ${isMini ? 'header-mini' : ''}">
-        <div class="${isOn && hasBrightness ? 'current-temp' : 'device-name'} ${isMini ? 'current-temp-mini' : ''}">
-          ${isOn && hasBrightness ? html`${brightnessPercent}<span class="unit">%</span>` : html`
-            ${card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
-            <span class="unit" style="font-size: 0.85rem; opacity: 0.8; display: block; margin-top: 2px;">${isOn ? card._t('on') : card._t('off')}</span>
-          `}
+        ${card._renderHeaderIcon(stateObj, isMini)}
+        <div class="device-name ${isMini ? 'device-name-mini' : ''}">
+          ${card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
+          <span class="device-value">${isOn && hasBrightness ? `${brightnessPercent}%` : (isOn ? card._t('on') : card._t('off'))}</span>
         </div>
         ${card._renderHeaderAction(showPopupButton)}
       </div>

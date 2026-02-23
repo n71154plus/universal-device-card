@@ -10,9 +10,7 @@ export function renderVacuum(card, stateObj, layout = 'standard', showPopupButto
       return html`
         <div class="bar-content">
           <div class="bar-left">
-            <div class="bar-icon ${state === 'cleaning' ? 'bar-icon-on' : ''}">
-              <ha-icon icon="mdi:robot-vacuum"></ha-icon>
-            </div>
+            ${card._renderBarIcon(stateObj, state === 'cleaning' ? 'bar-icon-on' : '')}
             <div class="bar-info">
               <div class="bar-name">${card._renderTitle(stateObj.attributes.friendly_name, layout)}</div>
               <div class="bar-state">${card._getVacuumStateText(state)} · ${battery}%</div>
@@ -43,8 +41,10 @@ export function renderVacuum(card, stateObj, layout = 'standard', showPopupButto
 
     return html`
       <div class="header ${isMini ? 'header-mini' : ''}">
+        ${card._renderHeaderIcon(stateObj, isMini)}
         <div class="device-name ${isMini ? 'device-name-mini' : ''}">
           ${card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
+          <span class="device-value">${card._getVacuumStateText(state)} · ${battery}%</span>
         </div>
         ${card._renderHeaderAction(showPopupButton)}
       </div>

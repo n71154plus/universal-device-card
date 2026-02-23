@@ -11,9 +11,7 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
       return html`
         <div class="bar-content">
           <div class="bar-left">
-            <div class="bar-icon ${state === 'playing' ? 'bar-icon-on' : ''}">
-              <ha-icon icon="mdi:${state === 'playing' ? 'play' : 'pause'}"></ha-icon>
-            </div>
+            ${card._renderBarIcon(stateObj, state === 'playing' ? 'bar-icon-on' : '')}
             <div class="bar-info">
               <div class="bar-name">${card._renderTitle(stateObj.attributes.friendly_name, layout, 15)}</div>
               <div class="bar-state">${card._renderTitle(title, layout, 25)}</div>
@@ -57,8 +55,10 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
     const volPercent = stateObj.attributes.volume_level !== undefined ? Math.round(stateObj.attributes.volume_level * 100) : 0;
     return html`
       <div class="header ${isMini ? 'header-mini' : ''}">
+        ${card._renderHeaderIcon(stateObj, isMini)}
         <div class="device-name ${isMini ? 'device-name-mini' : ''}">
           ${card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
+          ${title ? html`<span class="device-value">${card._renderTitle(title, layout, 28)}</span>` : ''}
         </div>
         ${card._renderHeaderAction(showPopupButton)}
       </div>
