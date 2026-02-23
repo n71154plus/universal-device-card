@@ -1,0 +1,19 @@
+{
+  "name": "universal-device-card",
+  "version": "2.1.0",
+  "description": "Universal Device Card for Home Assistant",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c && node scripts/copy-translations.cjs",
+    "dev": "rollup -c -w"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-alias": "^5.0.0",
+    "rollup": "^4.9.6",
+    "@rollup/plugin-terser": "^0.4.4"
+  },
+  "dependencies": {
+    "lit-element": "^2.4.0"
+  }
+}
