@@ -23,7 +23,11 @@ export class UniversalDeviceCard extends LitElement {
       _massQueueLoading: { type: Boolean },
       _massLibraryItems: { type: Array },
       _massLibraryExpanded: { type: Boolean },
-      _massLibraryLoading: { type: Boolean }
+      _massLibraryLoading: { type: Boolean },
+      _massSearchExpanded: { type: Boolean },
+      _massSearchQuery: { type: String },
+      _massSearchLoading: { type: Boolean },
+      _massSearchResults: { type: Object }
     };
   }
 
@@ -43,6 +47,10 @@ export class UniversalDeviceCard extends LitElement {
     this._massLibraryItems = [];
     this._massLibraryExpanded = false;
     this._massLibraryLoading = false;
+    this._massSearchExpanded = false;
+    this._massSearchQuery = '';
+    this._massSearchLoading = false;
+    this._massSearchResults = { artists: [], albums: [], tracks: [] };
   }
 
   async connectedCallback() {
@@ -550,42 +558,76 @@ export class UniversalDeviceCard extends LitElement {
     return stateObj && stateObj.attributes && stateObj.attributes.mass_player_type != null;
   }
 
-  /** 是否已安裝 mass_queue 且可取得佇列 */
+  /** 是否已安裝 music_assistant 且可取得佇列（官方 get_queue） */
   _hasMassQueue() {
-    return this.hass?.services?.mass_queue?.['get_queue_items'] != null;
+    return this.hass?.services?.music_assistant?.['get_queue'] != null;
   }
 
-  /** 取得 mass_queue 播放清單（需 SupportsResponse） */
+  /** 將 get_queue 回傳的單一項目正規化為顯示用格式 */
+  _normalizeQueueItem(item) {
+    if (!item) return null;
+    const media = item.media_item || item;
+    const artists = media.artists;
+    const artistName = Array.isArray(artists) && artists.length
+      ? artists.map((a) => a?.name).filter(Boolean).join(', ')
+      : '';
+    return {
+      queue_item_id: item.queue_item_id,
+      name: item.name || media?.name,
+      media_title: item.name || media?.name,
+      media_artist: artistName,
+      media_album_name: media?.album?.name,
+      media_image: media?.image,
+      uri: media?.uri,
+      media_item: media
+    };
+  }
+
+  /** 取得 music_assistant.get_queue 播放清單（官方 API） */
   async _fetchMassQueue() {
     if (!this.config?.entity) return;
     this._massQueueLoading = true;
     this._massQueueItems = [];
     this.requestUpdate('_massQueueLoading');
     this.requestUpdate('_massQueueItems');
+    const entityId = this.config.entity;
     try {
-      // HA WebSocket API 使用 return_response，回傳在 result.response
       let raw = null;
+      const target = { entity_id: entityId };
+      const serviceData = { entity_id: entityId };
       if (this.hass?.connection && typeof this.hass.connection.sendMessagePromise === 'function') {
         const msg = await this.hass.connection.sendMessagePromise({
           type: 'call_service',
-          domain: 'mass_queue',
-          service: 'get_queue_items',
-          service_data: { entity: this.config.entity },
+          domain: 'music_assistant',
+          service: 'get_queue',
+          service_data: serviceData,
+          target,
           return_response: true
         });
-        raw = msg?.result?.response ?? msg?.response;
+        raw = msg?.result?.response ?? msg?.response ?? msg?.result;
       }
       if (raw == null && typeof this.hass?.callService === 'function') {
-        const res = await this.hass.callService('mass_queue', 'get_queue_items', { entity: this.config.entity }, {}, true);
-        raw = res?.response ?? res?.result;
+        const res = await this.hass.callService('music_assistant', 'get_queue', serviceData, target, true);
+        raw = res?.response ?? res?.result ?? res;
       }
-      let items = [];
-      if (raw != null) {
-        if (Array.isArray(raw)) items = raw;
-        else if (raw && typeof raw === 'object' && raw[this.config.entity]) items = raw[this.config.entity];
-        else if (raw && typeof raw === 'object') items = Object.values(raw).flat();
+      const items = [];
+      if (raw && typeof raw === 'object') {
+        const queue = raw[entityId] || raw;
+        if (queue && typeof queue === 'object') {
+          if (Array.isArray(queue.items)) {
+            queue.items.forEach((it) => {
+              const n = this._normalizeQueueItem(it);
+              if (n) items.push(n);
+            });
+          } else {
+            [queue.current_item, queue.next_item].forEach((it) => {
+              const n = this._normalizeQueueItem(it);
+              if (n) items.push(n);
+            });
+          }
+        }
       }
-      this._massQueueItems = Array.isArray(items) ? items : [];
+      this._massQueueItems = items;
     } catch (e) {
       this._massQueueItems = [];
     }
@@ -602,12 +644,18 @@ export class UniversalDeviceCard extends LitElement {
     this.requestUpdate('_massQueueExpanded');
   }
 
-  _playMassQueueItem(queueItemId) {
+  /** 播放佇列項目（使用 music_assistant.play_media + 曲目 uri） */
+  _playMassQueueItem(item) {
     if (!this.hass || !this.config?.entity) return;
-    this.hass.callService('mass_queue', 'play_queue_item', {
-      entity: this.config.entity,
-      queue_item_id: queueItemId
-    });
+    const uri = typeof item === 'string' ? null : item?.uri || item?.media_item?.uri;
+    if (uri) {
+      this.hass.callService('music_assistant', 'play_media', {
+        entity_id: this.config.entity,
+        media_id: [uri],
+        media_type: 'track'
+      });
+      return;
+    }
   }
 
   /** 是否已安裝 music_assistant 且可取得 library */
@@ -615,47 +663,26 @@ export class UniversalDeviceCard extends LitElement {
     return this.hass?.services?.music_assistant?.['get_library'] != null;
   }
 
-  /** 從 media_player 實體反查 music_assistant config_entry_id */
+  /** 取得 music_assistant config_entry_id（供 get_library 使用） */
   async _getMassConfigEntryId() {
-    // 0. 若 config 有手動指定，優先使用
+    // 0. 手動指定
     if (this.config?.mass_config_entry_id) return this.config.mass_config_entry_id;
-    if (!this.hass?.connection || !this.config?.entity) return null;
-    try {
-      // 1. 從 entity registry 取得該實體的 config_entry_id
-      const entityMsg = await this.hass.connection.sendMessagePromise({
-        type: 'config/entity_registry/get',
-        entity_id: this.config.entity
-      });
-      const entityEntry = entityMsg?.result;
-      if (entityEntry?.config_entry_id) return entityEntry.config_entry_id;
-
-      // 2. 若 entity 無 config_entry_id，從 device 取得
-      const deviceId = entityEntry?.device_id;
-      if (deviceId) {
-        const deviceMsg = await this.hass.connection.sendMessagePromise({
-          type: 'config/device_registry/list'
-        });
-        const devices = deviceMsg?.result ?? [];
-        const device = Array.isArray(devices) ? devices.find(d => d.id === deviceId) : null;
-        const configEntries = device?.config_entries ?? [];
-        if (configEntries.length > 0) return configEntries[0];
-      }
-
-      // 3. Fallback: config_entries/get 可能不存在，僅在 try 內呼叫
+    // 1. 前端 entity 快取（若有）
+    const entityId = this.config?.entity;
+    const frontendEntity = this.hass?.entities?.[entityId];
+    if (frontendEntity?.config_entry_id) return frontendEntity.config_entry_id;
+    // 2. REST API（可行且穩定）
+    if (typeof this.hass?.callApi === 'function') {
       try {
-        const entriesMsg = await this.hass.connection.sendMessagePromise({
-          type: 'config_entries/get',
-          domain: 'music_assistant'
-        });
-        const entries = entriesMsg?.result ?? [];
-        const first = Array.isArray(entries) && entries.length > 0 ? entries[0] : null;
-        return first?.entry_id ?? first ?? null;
+        const entries = await this.hass.callApi('GET', 'config/config_entries/entry');
+        const list = Array.isArray(entries) ? entries : [];
+        const ma = list.find((e) => e?.domain === 'music_assistant' && e?.state === 'loaded');
+        if (ma?.entry_id) return ma.entry_id;
       } catch (_) {
-        return null;
+        // ignore
       }
-    } catch (_e) {
-      return null;
     }
+    return null;
   }
 
   /** 取得 music_assistant 音樂資料庫（tracks / albums / artists / playlists） */
@@ -733,9 +760,82 @@ export class UniversalDeviceCard extends LitElement {
     });
   }
 
-  /** 是否為 MA 實體且可顯示 playlist/library（mass_queue 或 music_assistant） */
+  /** 是否已安裝 music_assistant 且可搜尋 */
+  _hasMusicAssistantSearch() {
+    return this.hass?.services?.music_assistant?.search != null;
+  }
+
+  /** 執行 music_assistant.search，回傳 { artists, albums, tracks } */
+  async _fetchMassSearch(query) {
+    const q = (query || '').trim();
+    if (!q || !this.config?.entity) return;
+    this._massSearchLoading = true;
+    this._massSearchResults = { artists: [], albums: [], tracks: [] };
+    this.requestUpdate('_massSearchLoading');
+    this.requestUpdate('_massSearchResults');
+    try {
+      const configEntryId = await this._getMassConfigEntryId();
+      if (!configEntryId) {
+        this._massSearchResults = { artists: [], albums: [], tracks: [] };
+        return;
+      }
+      const serviceData = { config_entry_id: configEntryId, name: q };
+      let raw = null;
+      if (this.hass?.connection && typeof this.hass.connection.sendMessagePromise === 'function') {
+        const msg = await this.hass.connection.sendMessagePromise({
+          type: 'call_service',
+          domain: 'music_assistant',
+          service: 'search',
+          service_data: serviceData,
+          return_response: true
+        });
+        raw = msg?.result?.response ?? msg?.response ?? msg?.result;
+      }
+      if (raw == null && typeof this.hass?.callService === 'function') {
+        const res = await this.hass.callService('music_assistant', 'search', serviceData, {}, true);
+        raw = res?.response ?? res?.result ?? res;
+      }
+      const artists = Array.isArray(raw?.artists) ? raw.artists : [];
+      const albums = Array.isArray(raw?.albums) ? raw.albums : [];
+      const tracks = Array.isArray(raw?.tracks) ? raw.tracks : [];
+      this._massSearchResults = { artists, albums, tracks };
+    } catch (_e) {
+      this._massSearchResults = { artists: [], albums: [], tracks: [] };
+    } finally {
+      this._massSearchLoading = false;
+      this.requestUpdate('_massSearchResults');
+      this.requestUpdate('_massSearchLoading');
+    }
+  }
+
+  _toggleMassSearchExpand() {
+    this._massSearchExpanded = !this._massSearchExpanded;
+    if (!this._massSearchExpanded) {
+      this._massSearchQuery = '';
+      this._massSearchResults = { artists: [], albums: [], tracks: [] };
+    }
+    this.requestUpdate('_massSearchExpanded');
+    this.requestUpdate('_massSearchQuery');
+    this.requestUpdate('_massSearchResults');
+  }
+
+  _onMassSearchInput(ev) {
+    this._massSearchQuery = ev?.target?.value ?? '';
+    this.requestUpdate('_massSearchQuery');
+  }
+
+  _runMassSearch() {
+    const q = (this._massSearchQuery || '').trim();
+    if (q) this._fetchMassSearch(q);
+  }
+
+  /** 是否為 MA 實體且可顯示 queue/library/搜尋 */
   _showMassPlaylistOrLibrary(stateObj) {
-    return this._isMusicAssistant(stateObj) && (this._hasMassQueue() || this._hasMusicAssistantLibrary());
+    return this._isMusicAssistant(stateObj) && (
+      this._hasMassQueue() ||
+      this._hasMusicAssistantLibrary() ||
+      this._hasMusicAssistantSearch()
+    );
   }
 
   _setSelect(entityId, option) {

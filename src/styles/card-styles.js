@@ -867,7 +867,7 @@ export const cardStyles = css`
         transform: scale(1.1);
       }
 
-      /* Music Assistant 播放清單 (mass_queue) */
+      /* Music Assistant 佇列 (music_assistant.get_queue) */
       .mass-queue-foldable {
         margin-top: 16px;
         border-radius: 12px;
@@ -980,6 +980,42 @@ export const cardStyles = css`
         width: 28px;
         height: 28px;
         opacity: 0.7;
+      }
+
+      /* Music Assistant 搜尋列 */
+      .mass-search-input-row {
+        display: flex;
+        gap: 8px;
+        padding: 8px 8px 4px;
+        align-items: center;
+      }
+      .mass-search-input {
+        flex: 1;
+        min-width: 0;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(var(--rgb-primary-text-color), 0.2);
+        background: rgba(var(--rgb-primary-text-color), 0.05);
+        color: var(--primary-text-color);
+        font-size: 0.9rem;
+      }
+      .mass-search-input::placeholder {
+        color: var(--text-secondary);
+      }
+      .mass-search-btn {
+        flex: 0 0 auto;
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: none;
+        background: var(--primary-color);
+        color: var(--text-primary-color);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .mass-search-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
 
       /* Music Assistant 資料庫列 (Library) */

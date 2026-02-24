@@ -60,7 +60,11 @@ export const DEFAULT_TRANSLATIONS = {
     mass_queue_playlist: '播放清單',
     mass_queue_loading: '載入中…',
     mass_library: '音樂資料庫',
-    mass_library_loading: '載入中…'
+    mass_library_loading: '載入中…',
+    mass_search: '搜尋',
+    mass_search_placeholder: '藝人、專輯或曲目…',
+    mass_search_loading: '載入中…',
+    mass_search_button: '搜尋'
   },
   'zh-CN': {
     target_temp: '目标温度',
@@ -114,7 +118,11 @@ export const DEFAULT_TRANSLATIONS = {
     mass_queue_playlist: '播放列表',
     mass_queue_loading: '加载中…',
     mass_library: '音乐资料库',
-    mass_library_loading: '加载中…'
+    mass_library_loading: '加载中…',
+    mass_search: '搜索',
+    mass_search_placeholder: '艺人、专辑或曲目…',
+    mass_search_loading: '加载中…',
+    mass_search_button: '搜索'
   },
   'en': {
     target_temp: 'Target Temp',
@@ -168,7 +176,11 @@ export const DEFAULT_TRANSLATIONS = {
     mass_queue_playlist: 'Queue',
     mass_queue_loading: 'Loading…',
     mass_library: 'Library',
-    mass_library_loading: 'Loading…'
+    mass_library_loading: 'Loading…',
+    mass_search: 'Search',
+    mass_search_placeholder: 'Artist, album or track…',
+    mass_search_loading: 'Loading…',
+    mass_search_button: 'Search'
   },
   'ja': {
     target_temp: '目標温度',
@@ -222,6 +234,10 @@ export const DEFAULT_TRANSLATIONS = {
     mass_queue_playlist: '再生リスト',
     mass_queue_loading: '読み込み中…',
     mass_library: '音楽ライブラリ',
-    mass_library_loading: '読み込み中…'
+    mass_library_loading: '読み込み中…',
+    mass_search: '検索',
+    mass_search_placeholder: 'アーティスト、アルバム、曲…',
+    mass_search_loading: '読み込み中…',
+    mass_search_button: '検索'
   }
 };

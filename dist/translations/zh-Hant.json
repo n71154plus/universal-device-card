@@ -50,5 +50,9 @@
   "mass_queue_playlist": "播放清單",
   "mass_queue_loading": "載入中…",
   "mass_library": "音樂資料庫",
-  "mass_library_loading": "載入中…"
+  "mass_library_loading": "載入中…",
+  "mass_search": "搜尋",
+  "mass_search_placeholder": "藝人、專輯或曲目…",
+  "mass_search_loading": "載入中…",
+  "mass_search_button": "搜尋"
 }

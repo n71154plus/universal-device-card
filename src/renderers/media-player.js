@@ -77,6 +77,13 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
               <ha-icon icon="mdi:music-box-multiple"></ha-icon>
             </div>
           ` : ''}
+          ${showMaButtons && card._hasMusicAssistantSearch() ? html`
+            <div class="bar-mode-chip ${card._massSearchExpanded ? 'active' : ''}"
+                 @click="${() => card._toggleMassSearchExpand()}"
+                 title="${card._t('mass_search')}">
+              <ha-icon icon="mdi:magnify"></ha-icon>
+            </div>
+          ` : ''}
         </div>
 
         ${card._isMusicAssistant(stateObj) && card._hasMassQueue() && card._massQueueExpanded ? html`
@@ -87,7 +94,7 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
                 : card._massQueueItems.length === 0
                   ? html`<div class="mass-queue-empty">—</div>`
                   : card._massQueueItems.map((item) => html`
-                    <button class="mass-queue-item" @click="${() => card._playMassQueueItem(item.queue_item_id)}">
+                    <button class="mass-queue-item" @click="${() => card._playMassQueueItem(item)}">
                       <div class="mass-queue-item-image">
                         ${item.local_image_encoded
                           ? html`<img src="data:image/jpeg;base64,${item.local_image_encoded}" alt="" />`
@@ -96,7 +103,7 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
                             : html`<ha-icon icon="mdi:music"></ha-icon>`}
                       </div>
                       <div class="mass-queue-item-info">
-                        <span class="mass-queue-item-title">${item.media_title || '—'}</span>
+                        <span class="mass-queue-item-title">${item.media_title || item.name || '—'}</span>
                         ${item.media_artist ? html`<span class="mass-queue-item-artist">${item.media_artist}</span>` : ''}
                         ${item.media_album_name ? html`<span class="mass-queue-item-album">${item.media_album_name}</span>` : ''}
                       </div>
@@ -149,6 +156,53 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
           </div>
         ` : ''}
 
+        ${card._isMusicAssistant(stateObj) && card._hasMusicAssistantSearch() && card._massSearchExpanded ? html`
+          <div class="mass-queue-foldable">
+            <div class="mass-search-input-row">
+              <input type="text" class="mass-search-input" .value="${card._massSearchQuery || ''}"
+                     @input="${(e) => card._onMassSearchInput(e)}" @keydown="${(e) => e.key === 'Enter' && card._runMassSearch()}"
+                     placeholder="${card._t('mass_search_placeholder')}" />
+              <button class="mass-search-btn" @click="${() => card._runMassSearch()}" ?disabled="${card._massSearchLoading}">
+                ${card._massSearchLoading ? card._t('mass_search_loading') : card._t('mass_search_button')}
+              </button>
+            </div>
+            <div class="mass-library-section">
+              ${card._massSearchLoading && !card._massSearchResults?.artists?.length && !card._massSearchResults?.albums?.length && !card._massSearchResults?.tracks?.length
+                ? html`<div class="mass-queue-empty">${card._t('mass_search_loading')}</div>`
+                : ['artists', 'albums', 'tracks'].map((key) => {
+                    const type = key === 'artists' ? 'artist' : key === 'albums' ? 'album' : 'track';
+                    const items = card._massSearchResults?.[key] ?? [];
+                    if (!items.length) return '';
+                    return html`
+                      <div class="mass-library-row">
+                        <div class="mass-library-row-title">${type.toUpperCase()}</div>
+                        <div class="mass-library-row-scroll">
+                          ${items.map((item) => {
+                            const img = item.image || item.album?.image;
+                            const artistNames = item.artists?.map(a => a.name).filter(Boolean).join(', ') || '';
+                            const albumName = item.album?.name || '';
+                            return html`
+                              <button class="mass-library-chip" @click="${() => card._playMassLibraryItem(item)}">
+                                <div class="mass-library-chip-image">
+                                  ${img ? html`<img src="${img}" alt="" />` : html`<ha-icon icon="mdi:music"></ha-icon>`}
+                                </div>
+                                <div class="mass-library-chip-text">
+                                  <span class="mass-library-chip-title">${item.name || '—'}</span>
+                                  ${artistNames || albumName ? html`
+                                    <span class="mass-library-chip-sub">${artistNames || albumName}</span>
+                                  ` : ''}
+                                </div>
+                              </button>
+                            `;
+                          })}
+                        </div>
+                      </div>
+                    `;
+                  })}
+            </div>
+          </div>
+        ` : ''}
+
         ${card._renderMainButtons(layout)}
       `;
     }
@@ -170,6 +224,11 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
         ${showMaButtons && card._hasMusicAssistantLibrary() ? html`
           <button class="header-action" @click="${() => card._toggleMassLibraryExpand()}">
             <ha-icon icon="mdi:music-box-multiple"></ha-icon>
+          </button>
+        ` : ''}
+        ${showMaButtons && card._hasMusicAssistantSearch() ? html`
+          <button class="header-action" @click="${() => card._toggleMassSearchExpand()}">
+            <ha-icon icon="mdi:magnify"></ha-icon>
           </button>
         ` : ''}
         ${card._renderHeaderAction(showPopupButton)}
@@ -215,7 +274,7 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
               : card._massQueueItems.length === 0
                 ? html`<div class="mass-queue-empty">—</div>`
                 : card._massQueueItems.map((item) => html`
-                  <button class="mass-queue-item" @click="${() => card._playMassQueueItem(item.queue_item_id)}">
+                  <button class="mass-queue-item" @click="${() => card._playMassQueueItem(item)}">
                     <div class="mass-queue-item-image">
                       ${item.local_image_encoded
                         ? html`<img src="data:image/jpeg;base64,${item.local_image_encoded}" alt="" />`
@@ -224,7 +283,7 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
                           : html`<ha-icon icon="mdi:music"></ha-icon>`}
                     </div>
                     <div class="mass-queue-item-info">
-                      <span class="mass-queue-item-title">${item.media_title || '—'}</span>
+                      <span class="mass-queue-item-title">${item.media_title || item.name || '—'}</span>
                       ${item.media_artist ? html`<span class="mass-queue-item-artist">${item.media_artist}</span>` : ''}
                       ${item.media_album_name ? html`<span class="mass-queue-item-album">${item.media_album_name}</span>` : ''}
                     </div>
@@ -273,6 +332,53 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
                       </div>
                     `;
                   })}
+          </div>
+        </div>
+      ` : ''}
+
+      ${card._isMusicAssistant(stateObj) && card._hasMusicAssistantSearch() && card._massSearchExpanded ? html`
+        <div class="mass-queue-foldable">
+          <div class="mass-search-input-row">
+            <input type="text" class="mass-search-input" .value="${card._massSearchQuery || ''}"
+                   @input="${(e) => card._onMassSearchInput(e)}" @keydown="${(e) => e.key === 'Enter' && card._runMassSearch()}"
+                   placeholder="${card._t('mass_search_placeholder')}" />
+            <button class="mass-search-btn" @click="${() => card._runMassSearch()}" ?disabled="${card._massSearchLoading}">
+              ${card._massSearchLoading ? card._t('mass_search_loading') : card._t('mass_search_button')}
+            </button>
+          </div>
+          <div class="mass-library-section">
+            ${card._massSearchLoading && !card._massSearchResults?.artists?.length && !card._massSearchResults?.albums?.length && !card._massSearchResults?.tracks?.length
+              ? html`<div class="mass-queue-empty">${card._t('mass_search_loading')}</div>`
+              : ['artists', 'albums', 'tracks'].map((key) => {
+                  const type = key === 'artists' ? 'artist' : key === 'albums' ? 'album' : 'track';
+                  const items = card._massSearchResults?.[key] ?? [];
+                  if (!items.length) return '';
+                  return html`
+                    <div class="mass-library-row">
+                      <div class="mass-library-row-title">${type.toUpperCase()}</div>
+                      <div class="mass-library-row-scroll">
+                        ${items.map((item) => {
+                          const img = item.image || item.album?.image;
+                          const artistNames = item.artists?.map(a => a.name).filter(Boolean).join(', ') || '';
+                          const albumName = item.album?.name || '';
+                          return html`
+                            <button class="mass-library-chip" @click="${() => card._playMassLibraryItem(item)}">
+                              <div class="mass-library-chip-image">
+                                ${img ? html`<img src="${img}" alt="" />` : html`<ha-icon icon="mdi:music"></ha-icon>`}
+                              </div>
+                              <div class="mass-library-chip-text">
+                                <span class="mass-library-chip-title">${item.name || '—'}</span>
+                                ${artistNames || albumName ? html`
+                                  <span class="mass-library-chip-sub">${artistNames || albumName}</span>
+                                ` : ''}
+                              </div>
+                            </button>
+                          `;
+                        })}
+                      </div>
+                    </div>
+                  `;
+                })}
           </div>
         </div>
       ` : ''}
