@@ -2,9 +2,11 @@ import { css } from 'lit-element';
 
 export const cardStyles = css`
       :host { 
+        display: block;
         --accent-color: #03a9f4;
         --text-primary: var(--primary-text-color);
         --text-secondary: var(--secondary-text-color);
+        -webkit-tap-highlight-color: transparent;
       }
       
       .main-container { 
@@ -1498,6 +1500,24 @@ export const cardStyles = css`
         font-size: 1.5rem !important;
       }
 
+      /* iPhone 小螢幕優化 */
+      @media screen and (max-width: 430px) {
+        .main-container {
+          padding: 16px;
+          border-radius: 22px;
+        }
+
+        .unified-header {
+          padding: 14px;
+          border-radius: 14px;
+          margin-bottom: 12px;
+        }
+
+        .bar-layout {
+          padding: 8px 12px !important;
+        }
+      }
+
       /* Text Popup */
       .text-popup-overlay {
         position: fixed;
@@ -1505,8 +1525,16 @@ export const cardStyles = css`
         left: 0;
         right: 0;
         bottom: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding:
+          env(safe-area-inset-top, 0px)
+          env(safe-area-inset-right, 0px)
+          env(safe-area-inset-bottom, 0px)
+          env(safe-area-inset-left, 0px);
         background: rgba(0, 0, 0, 0.7);
         backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1520,7 +1548,11 @@ export const cardStyles = css`
         padding: 20px;
         max-width: 90%;
         max-height: 80vh;
+        max-height: 80dvh;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
         animation: scaleIn 0.3s cubic-bezier(0.2, 1, 0.3, 1);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
       }
