@@ -7,12 +7,21 @@ export function getPopupStyles(isInBubbleCard = false) {
   return `
       .popup-overlay {
         position: fixed !important; 
+        inset: 0 !important;
         top: 0 !important; 
         left: 0 !important; 
         right: 0 !important; 
         bottom: 0 !important;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding:
+          env(safe-area-inset-top, 0px)
+          env(safe-area-inset-right, 0px)
+          env(safe-area-inset-bottom, 0px)
+          env(safe-area-inset-left, 0px);
         background: rgba(0,0,0,0.7); 
         backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         display: flex; 
         align-items: flex-end;
         justify-content: center; 
@@ -20,15 +29,20 @@ export function getPopupStyles(isInBubbleCard = false) {
         animation: fadeIn 0.3s;
         transform: none !important;
         will-change: auto;
+        overscroll-behavior: contain;
       }
       
       .popup-content {
         width: 100%; 
         max-height: 85vh; 
+        max-height: 85dvh;
         background: var(--card-background-color, #fff);
         border-radius: 36px 36px 0 0; 
         padding: 20px;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
         overflow-y: auto; 
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
         animation: slideUp 0.4s cubic-bezier(0.2, 1, 0.3, 1);
         color: var(--primary-text-color, #000);
         scrollbar-width: thin;
@@ -63,6 +77,17 @@ export function getPopupStyles(isInBubbleCard = false) {
         display: none;
       }
 
+      @supports (-webkit-touch-callout: none) {
+        .popup-overlay {
+          min-height: -webkit-fill-available;
+        }
+
+        .popup-content {
+          max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 8px);
+          border-radius: 30px 30px 0 0;
+        }
+      }
+
       @media (min-width: 768px) {
         .popup-overlay {
           align-items: center;
@@ -73,7 +98,9 @@ export function getPopupStyles(isInBubbleCard = false) {
           max-width: 600px;
           width: 90%;
           max-height: 80vh;
+          max-height: 80dvh;
           border-radius: 24px;
+          padding-bottom: 20px;
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
           animation: scaleIn 0.3s cubic-bezier(0.2, 1, 0.3, 1);
         }

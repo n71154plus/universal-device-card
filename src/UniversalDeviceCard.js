@@ -74,7 +74,7 @@ export class UniversalDeviceCard extends LitElement {
       const isInBubbleCard = this._isInBubbleCardPopup();
       const zIndex = isInBubbleCard ? 10000 : 1000; // ??bubble-card ?????踐??次? z-index
       
-      this._popupPortal.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: ${zIndex};`;
+      this._popupPortal.style.cssText = `position: fixed; inset: 0; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; min-height: -webkit-fill-available; pointer-events: none; z-index: ${zIndex};`;
       
       // 注入 CSS 樣式到 portal
       const style = document.createElement('style');
