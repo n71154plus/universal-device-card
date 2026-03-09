@@ -50,13 +50,16 @@ export class UniversalDeviceCard extends LitElement {
     this._massSearchExpanded = false;
     this._massSearchQuery = '';
     this._massSearchLoading = false;
-    this._massSearchResults = { artists: [], albums: [], tracks: [] };
+    this._massSearchResults = { artists: [], albums: [], tracks: [], playlists: [], podcasts: [] };
+    this._massSearchSuggestionsOpen = false;
+    this._massSearchHistory = [];
   }
 
   async connectedCallback() {
     super.connectedCallback();
     await this._loadTranslations();
     this._createPopupPortal();
+    this._loadSearchHistory();
   }
 
   disconnectedCallback() {
@@ -558,32 +561,27 @@ export class UniversalDeviceCard extends LitElement {
     return stateObj && stateObj.attributes && stateObj.attributes.mass_player_type != null;
   }
 
-  /** 是否已安裝 music_assistant 且可取得佇列（官方 get_queue） */
+  /** 是否已安裝 mass_queue 且可取得佇列（mass_queue.get_queue_items） */
   _hasMassQueue() {
-    return this.hass?.services?.music_assistant?.['get_queue'] != null;
+    return this.hass?.services?.mass_queue?.['get_queue_items'] != null;
   }
 
-  /** 將 get_queue 回傳的單一項目正規化為顯示用格式 */
-  _normalizeQueueItem(item) {
+  /** 將 mass_queue.get_queue_items 回傳的單一項目正規化為顯示用格式 */
+  _normalizeMassQueueItem(item) {
     if (!item) return null;
-    const media = item.media_item || item;
-    const artists = media.artists;
-    const artistName = Array.isArray(artists) && artists.length
-      ? artists.map((a) => a?.name).filter(Boolean).join(', ')
-      : '';
     return {
       queue_item_id: item.queue_item_id,
-      name: item.name || media?.name,
-      media_title: item.name || media?.name,
-      media_artist: artistName,
-      media_album_name: media?.album?.name,
-      media_image: media?.image,
-      uri: media?.uri,
-      media_item: media
+      name: item.media_title,
+      media_title: item.media_title,
+      media_artist: item.media_artist,
+      media_album_name: item.media_album_name,
+      media_image: item.media_image,
+      media_content_id: item.media_content_id,
+      uri: item.media_content_id
     };
   }
 
-  /** 取得 music_assistant.get_queue 播放清單（官方 API） */
+  /** 取得 mass_queue.get_queue_items 播放清單 */
   async _fetchMassQueue() {
     if (!this.config?.entity) return;
     this._massQueueLoading = true;
@@ -592,39 +590,34 @@ export class UniversalDeviceCard extends LitElement {
     this.requestUpdate('_massQueueItems');
     const entityId = this.config.entity;
     try {
+      const serviceData = {
+        entity: entityId,
+        limit_before: 5,
+        limit_after: 100
+      };
       let raw = null;
-      const target = { entity_id: entityId };
-      const serviceData = { entity_id: entityId };
       if (this.hass?.connection && typeof this.hass.connection.sendMessagePromise === 'function') {
         const msg = await this.hass.connection.sendMessagePromise({
           type: 'call_service',
-          domain: 'music_assistant',
-          service: 'get_queue',
+          domain: 'mass_queue',
+          service: 'get_queue_items',
           service_data: serviceData,
-          target,
           return_response: true
         });
         raw = msg?.result?.response ?? msg?.response ?? msg?.result;
       }
       if (raw == null && typeof this.hass?.callService === 'function') {
-        const res = await this.hass.callService('music_assistant', 'get_queue', serviceData, target, true);
+        const res = await this.hass.callService('mass_queue', 'get_queue_items', serviceData, {}, true);
         raw = res?.response ?? res?.result ?? res;
       }
       const items = [];
       if (raw && typeof raw === 'object') {
-        const queue = raw[entityId] || raw;
-        if (queue && typeof queue === 'object') {
-          if (Array.isArray(queue.items)) {
-            queue.items.forEach((it) => {
-              const n = this._normalizeQueueItem(it);
-              if (n) items.push(n);
-            });
-          } else {
-            [queue.current_item, queue.next_item].forEach((it) => {
-              const n = this._normalizeQueueItem(it);
-              if (n) items.push(n);
-            });
-          }
+        const list = raw[entityId] || (Array.isArray(raw) ? raw : null);
+        if (Array.isArray(list)) {
+          list.forEach((it) => {
+            const n = this._normalizeMassQueueItem(it);
+            if (n) items.push(n);
+          });
         }
       }
       this._massQueueItems = items;
@@ -644,10 +637,10 @@ export class UniversalDeviceCard extends LitElement {
     this.requestUpdate('_massQueueExpanded');
   }
 
-  /** 播放佇列項目（使用 music_assistant.play_media + 曲目 uri） */
+  /** 播放佇列項目（使用 music_assistant.play_media + media_content_id / uri） */
   _playMassQueueItem(item) {
     if (!this.hass || !this.config?.entity) return;
-    const uri = typeof item === 'string' ? null : item?.uri || item?.media_item?.uri;
+    const uri = typeof item === 'string' ? null : item?.uri || item?.media_content_id || item?.media_item?.uri;
     if (uri) {
       this.hass.callService('music_assistant', 'play_media', {
         entity_id: this.config.entity,
@@ -670,7 +663,11 @@ export class UniversalDeviceCard extends LitElement {
     // 1. 前端 entity 快取（若有）
     const entityId = this.config?.entity;
     const frontendEntity = this.hass?.entities?.[entityId];
-    if (frontendEntity?.config_entry_id) return frontendEntity.config_entry_id;
+    if (frontendEntity?.device_id) {
+      const device = this.hass?.devices?.[frontendEntity.device_id];
+      const entryId = device?.config_entries?.[0];
+      if (entryId) return entryId;
+    }
     // 2. REST API（可行且穩定）
     if (typeof this.hass?.callApi === 'function') {
       try {
@@ -700,7 +697,7 @@ export class UniversalDeviceCard extends LitElement {
       }
       const allItems = [];
       const typesToLoad = ['artist', 'album', 'playlist', 'track'];
-      const serviceData = { config_entry_id: configEntryId, limit: 30 };
+      const serviceData = { config_entry_id: configEntryId, limit: 50, order_by: 'last_played_desc' };
 
       const fetchOne = async (mt) => {
         const data = { ...serviceData, media_type: mt };
@@ -765,21 +762,21 @@ export class UniversalDeviceCard extends LitElement {
     return this.hass?.services?.music_assistant?.search != null;
   }
 
-  /** 執行 music_assistant.search，回傳 { artists, albums, tracks } */
+  /** 執行 music_assistant.search，回傳 { artists, albums, tracks, playlists, podcasts } */
   async _fetchMassSearch(query) {
     const q = (query || '').trim();
     if (!q || !this.config?.entity) return;
     this._massSearchLoading = true;
-    this._massSearchResults = { artists: [], albums: [], tracks: [] };
+    this._massSearchResults = { artists: [], albums: [], tracks: [], playlists: [], podcasts: [] };
     this.requestUpdate('_massSearchLoading');
     this.requestUpdate('_massSearchResults');
     try {
       const configEntryId = await this._getMassConfigEntryId();
       if (!configEntryId) {
-        this._massSearchResults = { artists: [], albums: [], tracks: [] };
+        this._massSearchResults = { artists: [], albums: [], tracks: [], playlists: [], podcasts: [] };
         return;
       }
-      const serviceData = { config_entry_id: configEntryId, name: q };
+      const serviceData = { config_entry_id: configEntryId, name: q, limit: 50 };
       let raw = null;
       if (this.hass?.connection && typeof this.hass.connection.sendMessagePromise === 'function') {
         const msg = await this.hass.connection.sendMessagePromise({
@@ -798,9 +795,12 @@ export class UniversalDeviceCard extends LitElement {
       const artists = Array.isArray(raw?.artists) ? raw.artists : [];
       const albums = Array.isArray(raw?.albums) ? raw.albums : [];
       const tracks = Array.isArray(raw?.tracks) ? raw.tracks : [];
-      this._massSearchResults = { artists, albums, tracks };
+      const playlists = Array.isArray(raw?.playlists) ? raw.playlists : (Array.isArray(raw?.playlist) ? raw.playlist : []);
+      const podcasts = Array.isArray(raw?.podcasts) ? raw.podcasts : (Array.isArray(raw?.podcast) ? raw.podcast : []);
+      this._massSearchResults = { artists, albums, tracks, playlists, podcasts };
+      if (q) this._addToSearchHistory(q);
     } catch (_e) {
-      this._massSearchResults = { artists: [], albums: [], tracks: [] };
+      this._massSearchResults = { artists: [], albums: [], tracks: [], playlists: [], podcasts: [] };
     } finally {
       this._massSearchLoading = false;
       this.requestUpdate('_massSearchResults');
@@ -812,11 +812,13 @@ export class UniversalDeviceCard extends LitElement {
     this._massSearchExpanded = !this._massSearchExpanded;
     if (!this._massSearchExpanded) {
       this._massSearchQuery = '';
-      this._massSearchResults = { artists: [], albums: [], tracks: [] };
+      this._massSearchResults = { artists: [], albums: [], tracks: [], playlists: [], podcasts: [] };
+      this._massSearchSuggestionsOpen = false;
     }
     this.requestUpdate('_massSearchExpanded');
     this.requestUpdate('_massSearchQuery');
     this.requestUpdate('_massSearchResults');
+    this.requestUpdate('_massSearchSuggestionsOpen');
   }
 
   _onMassSearchInput(ev) {
@@ -824,9 +826,78 @@ export class UniversalDeviceCard extends LitElement {
     this.requestUpdate('_massSearchQuery');
   }
 
+  _loadSearchHistory() {
+    try {
+      const raw = localStorage.getItem('universal-device-card-search-history');
+      const arr = raw ? JSON.parse(raw) : [];
+      this._massSearchHistory = Array.isArray(arr) ? arr.slice(0, 20) : [];
+    } catch (_) {
+      this._massSearchHistory = [];
+    }
+  }
+
+  _addToSearchHistory(query) {
+    const q = (query || '').trim();
+    if (!q) return;
+    const list = [...this._massSearchHistory];
+    const idx = list.indexOf(q);
+    if (idx >= 0) list.splice(idx, 1);
+    list.unshift(q);
+    this._massSearchHistory = list.slice(0, 20);
+    try {
+      localStorage.setItem('universal-device-card-search-history', JSON.stringify(this._massSearchHistory));
+    } catch (_) { /* ignore */ }
+    this.requestUpdate('_massSearchHistory');
+  }
+
+  _getFilteredSearchHistory() {
+    const q = (this._massSearchQuery || '').trim().toLowerCase();
+    if (!q) return this._massSearchHistory.slice(0, 10);
+    return this._massSearchHistory
+      .filter((h) => h.toLowerCase().includes(q))
+      .slice(0, 10);
+  }
+
+  _openSearchSuggestions() {
+    this._massSearchSuggestionsOpen = true;
+    this.requestUpdate('_massSearchSuggestionsOpen');
+  }
+
+  _closeSearchSuggestions() {
+    this._massSearchSuggestionsOpen = false;
+    this.requestUpdate('_massSearchSuggestionsOpen');
+  }
+
+  _selectSearchHistoryItem(item) {
+    this._massSearchQuery = item;
+    this._closeSearchSuggestions();
+    this.requestUpdate('_massSearchQuery');
+    this._runMassSearch();
+  }
+
   _runMassSearch() {
     const q = (this._massSearchQuery || '').trim();
     if (q) this._fetchMassSearch(q);
+  }
+
+  /** 滑鼠拖曳水平捲動（桌面版，不影響滾輪垂直捲動） */
+  _onMassScrollDragStart(e) {
+    if (e.target.closest('.mass-library-chip')) return;
+    const el = e.currentTarget;
+    if (!el) return;
+    e.preventDefault();
+    this._massScrollDrag = { el, startX: e.clientX, startScrollLeft: el.scrollLeft };
+    const onMove = (e2) => {
+      if (!this._massScrollDrag) return;
+      this._massScrollDrag.el.scrollLeft = this._massScrollDrag.startScrollLeft + this._massScrollDrag.startX - e2.clientX;
+    };
+    const onUp = () => {
+      this._massScrollDrag = null;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
   }
 
   /** 是否為 MA 實體且可顯示 queue/library/搜尋 */

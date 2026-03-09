@@ -2,10 +2,19 @@ import { html } from 'lit-element';
 
 export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopupButton = true) {
   const state = stateObj.state;
-    const title = stateObj.attributes.media_title || 'No Media';
-    const artist = stateObj.attributes.media_artist || '';
+    const attrs = stateObj.attributes || {};
+    const title = attrs.media_title || 'No Media';
+    const artist = attrs.media_artist || '';
     const isBar = layout === 'bar';
     const isMini = layout === 'mini';
+
+    const bgImage =
+      attrs.entity_picture_local ||
+      attrs.entity_picture ||
+      attrs.media_image ||
+      attrs.media_image_url ||
+      null;
+    const bgStyle = bgImage ? `--udc-media-bg-image: url("${bgImage}")` : '';
 
     const libGroups = {
       artist: [],
@@ -24,6 +33,7 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
       const volPercent = stateObj.attributes.volume_level !== undefined ? Math.round(stateObj.attributes.volume_level * 100) : 0;
       const showMaButtons = card._showMassPlaylistOrLibrary(stateObj);
       return html`
+        <div class="media-bg-root ${bgImage ? 'media-bg-root-has' : ''}" style="${bgStyle}">
         <div class="bar-content">
           <div class="bar-left">
             ${card._renderBarIcon(stateObj, state === 'playing' ? 'bar-icon-on' : '')}
@@ -127,7 +137,7 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
                       return html`
                         <div class="mass-library-row">
                           <div class="mass-library-row-title">${type.toUpperCase()}</div>
-                          <div class="mass-library-row-scroll">
+                          <div class="mass-library-row-scroll" @mousedown="${(e) => card._onMassScrollDragStart(e)}">
                             ${items.map((item) => {
                               const img = item.image || item.album?.image;
                               const artistNames = item.artists?.map(a => a.name).filter(Boolean).join(', ') || '';
@@ -159,24 +169,49 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
         ${card._isMusicAssistant(stateObj) && card._hasMusicAssistantSearch() && card._massSearchExpanded ? html`
           <div class="mass-queue-foldable">
             <div class="mass-search-input-row">
-              <input type="text" class="mass-search-input" .value="${card._massSearchQuery || ''}"
-                     @input="${(e) => card._onMassSearchInput(e)}" @keydown="${(e) => e.key === 'Enter' && card._runMassSearch()}"
-                     placeholder="${card._t('mass_search_placeholder')}" />
+              <div class="mass-search-input-wrap">
+                <input type="text" class="mass-search-input" .value="${card._massSearchQuery || ''}"
+                       @input="${(e) => card._onMassSearchInput(e)}"
+                       @focus="${() => card._openSearchSuggestions()}"
+                       @blur="${() => setTimeout(() => card._closeSearchSuggestions(), 150)}"
+                       @keydown="${(e) => { if (e.key === 'Enter') card._runMassSearch(); }}"
+                       placeholder="${card._t('mass_search_placeholder')}" />
+                ${card._massSearchSuggestionsOpen && card._getFilteredSearchHistory().length ? html`
+                  <div class="mass-search-suggestions">
+                    ${card._getFilteredSearchHistory().map((item) => html`
+                      <button type="button" class="mass-search-suggestion-item"
+                              @mousedown="${(e) => { e.preventDefault(); card._selectSearchHistoryItem(item); }}">
+                        ${item}
+                      </button>
+                    `)}
+                  </div>
+                ` : ''}
+              </div>
               <button class="mass-search-btn" @click="${() => card._runMassSearch()}" ?disabled="${card._massSearchLoading}">
                 ${card._massSearchLoading ? card._t('mass_search_loading') : card._t('mass_search_button')}
               </button>
             </div>
             <div class="mass-library-section">
-              ${card._massSearchLoading && !card._massSearchResults?.artists?.length && !card._massSearchResults?.albums?.length && !card._massSearchResults?.tracks?.length
+              ${card._massSearchLoading
+                && !card._massSearchResults?.artists?.length
+                && !card._massSearchResults?.albums?.length
+                && !card._massSearchResults?.tracks?.length
+                && !card._massSearchResults?.playlists?.length
+                && !card._massSearchResults?.podcasts?.length
                 ? html`<div class="mass-queue-empty">${card._t('mass_search_loading')}</div>`
-                : ['artists', 'albums', 'tracks'].map((key) => {
-                    const type = key === 'artists' ? 'artist' : key === 'albums' ? 'album' : 'track';
+                : ['artists', 'albums', 'tracks', 'playlists', 'podcasts'].map((key) => {
+                    const type =
+                      key === 'artists' ? 'artist'
+                      : key === 'albums' ? 'album'
+                      : key === 'tracks' ? 'track'
+                      : key === 'playlists' ? 'playlist'
+                      : 'podcast';
                     const items = card._massSearchResults?.[key] ?? [];
                     if (!items.length) return '';
                     return html`
                       <div class="mass-library-row">
                         <div class="mass-library-row-title">${type.toUpperCase()}</div>
-                        <div class="mass-library-row-scroll">
+                        <div class="mass-library-row-scroll" @mousedown="${(e) => card._onMassScrollDragStart(e)}">
                           ${items.map((item) => {
                             const img = item.image || item.album?.image;
                             const artistNames = item.artists?.map(a => a.name).filter(Boolean).join(', ') || '';
@@ -204,12 +239,15 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
         ` : ''}
 
         ${card._renderMainButtons(layout)}
+        </div>
+        </div>
       `;
     }
 
     const volPercent = stateObj.attributes.volume_level !== undefined ? Math.round(stateObj.attributes.volume_level * 100) : 0;
     const showMaButtons = card._showMassPlaylistOrLibrary(stateObj);
     return html`
+      <div class="media-bg-root ${bgImage ? 'media-bg-root-has' : ''}" style="${bgStyle}">
       <div class="header ${isMini ? 'header-mini' : ''}">
         ${card._renderHeaderIcon(stateObj, isMini)}
         <div class="device-name ${isMini ? 'device-name-mini' : ''}">
@@ -307,7 +345,7 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
                     return html`
                       <div class="mass-library-row">
                         <div class="mass-library-row-title">${type.toUpperCase()}</div>
-                        <div class="mass-library-row-scroll">
+                        <div class="mass-library-row-scroll" @mousedown="${(e) => card._onMassScrollDragStart(e)}">
                           ${items.map((item) => {
                             const img = item.image || item.album?.image;
                             const artistNames = item.artists?.map(a => a.name).filter(Boolean).join(', ') || '';
@@ -339,24 +377,59 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
       ${card._isMusicAssistant(stateObj) && card._hasMusicAssistantSearch() && card._massSearchExpanded ? html`
         <div class="mass-queue-foldable">
           <div class="mass-search-input-row">
-            <input type="text" class="mass-search-input" .value="${card._massSearchQuery || ''}"
-                   @input="${(e) => card._onMassSearchInput(e)}" @keydown="${(e) => e.key === 'Enter' && card._runMassSearch()}"
-                   placeholder="${card._t('mass_search_placeholder')}" />
+            <div class="mass-search-input-wrap">
+              <input type="text" class="mass-search-input" .value="${card._massSearchQuery || ''}"
+                     @input="${(e) => card._onMassSearchInput(e)}"
+                     @focus="${() => card._openSearchSuggestions()}"
+                     @blur="${() => setTimeout(() => card._closeSearchSuggestions(), 150)}"
+                     @keydown="${(e) => { if (e.key === 'Enter') card._runMassSearch(); }}"
+                     placeholder="${card._t('mass_search_placeholder')}" />
+              ${card._massSearchSuggestionsOpen && card._getFilteredSearchHistory().length ? html`
+                <div class="mass-search-suggestions">
+                  ${card._getFilteredSearchHistory().map((item) => html`
+                    <button type="button" class="mass-search-suggestion-item"
+                            @mousedown="${(e) => { e.preventDefault(); card._selectSearchHistoryItem(item); }}">
+                      ${item}
+                    </button>
+                  `)}
+                </div>
+              ` : ''}
+            </div>
             <button class="mass-search-btn" @click="${() => card._runMassSearch()}" ?disabled="${card._massSearchLoading}">
-              ${card._massSearchLoading ? card._t('mass_search_loading') : card._t('mass_search_button')}
+              ${card._massSearchLoading
+                ? html`<span>
+                    <span class="mass-search-spinner mass-search-spinner-inline"></span>
+                    <span>${card._t('mass_search_loading')}</span>
+                  </span>`
+                : card._t('mass_search_button')}
             </button>
           </div>
           <div class="mass-library-section">
-            ${card._massSearchLoading && !card._massSearchResults?.artists?.length && !card._massSearchResults?.albums?.length && !card._massSearchResults?.tracks?.length
-              ? html`<div class="mass-queue-empty">${card._t('mass_search_loading')}</div>`
-              : ['artists', 'albums', 'tracks'].map((key) => {
-                  const type = key === 'artists' ? 'artist' : key === 'albums' ? 'album' : 'track';
+            ${card._massSearchLoading
+              && !card._massSearchResults?.artists?.length
+              && !card._massSearchResults?.albums?.length
+              && !card._massSearchResults?.tracks?.length
+              && !card._massSearchResults?.playlists?.length
+              && !card._massSearchResults?.podcasts?.length
+              ? html`
+                  <div class="mass-queue-empty">
+                    <div class="mass-search-spinner mass-search-spinner-center"></div>
+                    <div>${card._t('mass_search_loading')}</div>
+                  </div>
+                `
+              : ['artists', 'albums', 'tracks', 'playlists', 'podcasts'].map((key) => {
+                  const type =
+                    key === 'artists' ? 'artist'
+                    : key === 'albums' ? 'album'
+                    : key === 'tracks' ? 'track'
+                    : key === 'playlists' ? 'playlist'
+                    : 'podcast';
                   const items = card._massSearchResults?.[key] ?? [];
                   if (!items.length) return '';
                   return html`
                     <div class="mass-library-row">
                       <div class="mass-library-row-title">${type.toUpperCase()}</div>
-                      <div class="mass-library-row-scroll">
+                      <div class="mass-library-row-scroll" @mousedown="${(e) => card._onMassScrollDragStart(e)}">
                         ${items.map((item) => {
                           const img = item.image || item.album?.image;
                           const artistNames = item.artists?.map(a => a.name).filter(Boolean).join(', ') || '';
@@ -384,5 +457,6 @@ export function renderMediaPlayer(card, stateObj, layout = 'standard', showPopup
       ` : ''}
 
       ${card._renderMainButtons(layout)}
+      </div>
     `;
 }

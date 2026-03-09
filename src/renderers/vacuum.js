@@ -2,7 +2,11 @@ import { html } from 'lit-element';
 
 export function renderVacuum(card, stateObj, layout = 'standard', showPopupButton = true) {
   const state = stateObj.state;
-    const battery = stateObj.attributes.battery_level || 0;
+    const attrs = stateObj.attributes || {};
+    const rawBattery = attrs.battery_level ?? attrs.battery ?? attrs.battery_percent ?? attrs.batteryPercentage;
+    const battery = rawBattery != null && Number.isFinite(Number(rawBattery))
+      ? Math.max(0, Math.min(100, Number(rawBattery)))
+      : null;
     const isBar = layout === 'bar';
     const isMini = layout === 'mini';
 
@@ -13,7 +17,7 @@ export function renderVacuum(card, stateObj, layout = 'standard', showPopupButto
             ${card._renderBarIcon(stateObj, state === 'cleaning' ? 'bar-icon-on' : '')}
             <div class="bar-info">
               <div class="bar-name">${card._renderTitle(stateObj.attributes.friendly_name, layout)}</div>
-              <div class="bar-state">${card._getVacuumStateText(state)} · ${battery}%</div>
+              <div class="bar-state">${card._getVacuumStateText(state)}${battery != null ? ` · ${battery}%` : ''}</div>
             </div>
           </div>
           <div class="bar-right">
@@ -44,17 +48,19 @@ export function renderVacuum(card, stateObj, layout = 'standard', showPopupButto
         ${card._renderHeaderIcon(stateObj, isMini)}
         <div class="device-name ${isMini ? 'device-name-mini' : ''}">
           ${card._renderTitle(stateObj.attributes.friendly_name || card._t('device'), layout)}
-          <span class="device-value">${card._getVacuumStateText(state)} · ${battery}%</span>
+          <span class="device-value">${card._getVacuumStateText(state)}${battery != null ? ` · ${battery}%` : ''}</span>
         </div>
         ${card._renderHeaderAction(showPopupButton)}
       </div>
 
       <div class="vacuum-status ${isMini ? 'vacuum-status-mini' : ''}">
         <div class="status-badge ${isMini ? 'status-badge-mini' : ''}">${card._getVacuumStateText(state)}</div>
+        ${battery != null ? html`
         <div class="battery-display ${isMini ? 'battery-display-mini' : ''}">
           <ha-icon icon="mdi:battery${battery > 90 ? '' : battery > 50 ? '-50' : '-20'}"></ha-icon>
           <span>${battery}%</span>
         </div>
+        ` : ''}
       </div>
 
       <div class="vacuum-controls ${isMini ? 'vacuum-controls-mini' : ''}">

@@ -823,6 +823,26 @@ export const cardStyles = css`
       }
 
       /* Media Player */
+      .media-bg-root {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .media-bg-root-has::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.85)), var(--udc-media-bg-image);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        z-index: 0;
+      }
+      .media-bg-root > * {
+        position: relative;
+        z-index: 1;
+      }
+
       .media-info {
         text-align: center;
         margin: 24px 0;
@@ -991,8 +1011,13 @@ export const cardStyles = css`
         padding: 8px 8px 4px;
         align-items: center;
       }
-      .mass-search-input {
+      .mass-search-input-wrap {
         flex: 1;
+        min-width: 0;
+        position: relative;
+      }
+      .mass-search-input {
+        width: 100%;
         min-width: 0;
         padding: 8px 12px;
         border-radius: 8px;
@@ -1000,6 +1025,35 @@ export const cardStyles = css`
         background: rgba(var(--rgb-primary-text-color), 0.05);
         color: var(--primary-text-color);
         font-size: 0.9rem;
+      }
+      .mass-search-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        border-radius: 8px;
+        background: var(--card-background-color, var(--ha-card-background));
+        border: 1px solid rgba(var(--rgb-primary-text-color), 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10;
+      }
+      .mass-search-suggestion-item {
+        display: block;
+        width: 100%;
+        padding: 8px 12px;
+        border: none;
+        background: transparent;
+        color: var(--primary-text-color);
+        font-size: 0.9rem;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .mass-search-suggestion-item:hover {
+        background: rgba(var(--rgb-primary-text-color), 0.08);
       }
       .mass-search-input::placeholder {
         color: var(--text-secondary);
@@ -1018,6 +1072,36 @@ export const cardStyles = css`
       .mass-search-btn:disabled {
         opacity: 0.6;
         cursor: not-allowed;
+      }
+
+      .mass-search-spinner {
+        box-sizing: border-box;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid rgba(var(--rgb-primary-text-color), 0.3);
+        border-top-color: var(--primary-color);
+        animation: mass-search-spin 0.7s linear infinite;
+      }
+
+      .mass-search-spinner-inline {
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+
+      .mass-search-spinner-center {
+        display: block;
+        margin: 6px auto 4px;
+      }
+
+      @keyframes mass-search-spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
 
       /* Music Assistant 資料庫列 (Library) */
@@ -1045,6 +1129,7 @@ export const cardStyles = css`
         padding: 2px 2px 6px;
         scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
+        cursor: grab;
       }
       .mass-library-row-scroll::-webkit-scrollbar {
         display: none;

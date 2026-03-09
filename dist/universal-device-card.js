@@ -1,4 +1,4 @@
-const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window.customElements.polyfillWrapFlushCallback,t=(e,t,i=null)=>{for(;t!==i;){const i=t.nextSibling;e.removeChild(t),t=i}},i=`{{lit-${String(Math.random()).slice(2)}}}`,a=`\x3c!--${i}--\x3e`,n=new RegExp(`${i}|${a}`),s="$lit$";class r{constructor(e,t){this.parts=[],this.element=t;const a=[],r=[],c=document.createTreeWalker(t.content,133,null,!1);let p=0,u=-1,h=0;const{strings:m,values:{length:b}}=e;for(;h<b;){const e=c.nextNode();if(null!==e){if(u++,1===e.nodeType){if(e.hasAttributes()){const t=e.attributes,{length:i}=t;let a=0;for(let e=0;e<i;e++)o(t[e].name,s)&&a++;for(;a-- >0;){const t=m[h],i=d.exec(t)[2],a=i.toLowerCase()+s,r=e.getAttribute(a);e.removeAttribute(a);const o=r.split(n);this.parts.push({type:"attribute",index:u,name:i,strings:o}),h+=o.length-1}}"TEMPLATE"===e.tagName&&(r.push(e),c.currentNode=e.content)}else if(3===e.nodeType){const t=e.data;if(t.indexOf(i)>=0){const i=e.parentNode,r=t.split(n),c=r.length-1;for(let t=0;t<c;t++){let a,n=r[t];if(""===n)a=l();else{const e=d.exec(n);null!==e&&o(e[2],s)&&(n=n.slice(0,e.index)+e[1]+e[2].slice(0,-5)+e[3]),a=document.createTextNode(n)}i.insertBefore(a,e),this.parts.push({type:"node",index:++u})}""===r[c]?(i.insertBefore(l(),e),a.push(e)):e.data=r[c],h+=c}}else if(8===e.nodeType)if(e.data===i){const t=e.parentNode;null!==e.previousSibling&&u!==p||(u++,t.insertBefore(l(),e)),p=u,this.parts.push({type:"node",index:u}),null===e.nextSibling?e.data="":(a.push(e),u--),h++}else{let t=-1;for(;-1!==(t=e.data.indexOf(i,t+1));)this.parts.push({type:"node",index:-1}),h++}}else c.currentNode=r.pop()}for(const e of a)e.parentNode.removeChild(e)}}const o=(e,t)=>{const i=e.length-t.length;return i>=0&&e.slice(i)===t},c=e=>-1!==e.index,l=()=>document.createComment(""),d=/([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;function p(e,t){const{element:{content:i},parts:a}=e,n=document.createTreeWalker(i,133,null,!1);let s=h(a),r=a[s],o=-1,c=0;const l=[];let d=null;for(;n.nextNode();){o++;const e=n.currentNode;for(e.previousSibling===d&&(d=null),t.has(e)&&(l.push(e),null===d&&(d=e)),null!==d&&c++;void 0!==r&&r.index===o;)r.index=null!==d?-1:r.index-c,s=h(a,s),r=a[s]}l.forEach(e=>e.parentNode.removeChild(e))}const u=e=>{let t=11===e.nodeType?0:1;const i=document.createTreeWalker(e,133,null,!1);for(;i.nextNode();)t++;return t},h=(e,t=-1)=>{for(let i=t+1;i<e.length;i++){const t=e[i];if(c(t))return i}return-1};const m=new WeakMap,b=e=>"function"==typeof e&&m.has(e),_={},g={};class v{constructor(e,t,i){this.__parts=[],this.template=e,this.processor=t,this.options=i}update(e){let t=0;for(const i of this.__parts)void 0!==i&&i.setValue(e[t]),t++;for(const e of this.__parts)void 0!==e&&e.commit()}_clone(){const t=e?this.template.element.content.cloneNode(!0):document.importNode(this.template.element.content,!0),i=[],a=this.template.parts,n=document.createTreeWalker(t,133,null,!1);let s,r=0,o=0,l=n.nextNode();for(;r<a.length;)if(s=a[r],c(s)){for(;o<s.index;)o++,"TEMPLATE"===l.nodeName&&(i.push(l),n.currentNode=l.content),null===(l=n.nextNode())&&(n.currentNode=i.pop(),l=n.nextNode());if("node"===s.type){const e=this.processor.handleTextExpression(this.options);e.insertAfterNode(l.previousSibling),this.__parts.push(e)}else this.__parts.push(...this.processor.handleAttributeExpressions(l,s.name,s.strings,this.options));r++}else this.__parts.push(void 0),r++;return e&&(document.adoptNode(t),customElements.upgrade(t)),t}}const y=window.trustedTypes&&trustedTypes.createPolicy("lit-html",{createHTML:e=>e}),f=` ${i} `;class x{constructor(e,t,i,a){this.strings=e,this.values=t,this.type=i,this.processor=a}getHTML(){const e=this.strings.length-1;let t="",n=!1;for(let r=0;r<e;r++){const e=this.strings[r],o=e.lastIndexOf("\x3c!--");n=(o>-1||n)&&-1===e.indexOf("--\x3e",o+1);const c=d.exec(e);t+=null===c?e+(n?f:a):e.substr(0,c.index)+c[1]+c[2]+s+c[3]+i}return t+=this.strings[e],t}getTemplateElement(){const e=document.createElement("template");let t=this.getHTML();return void 0!==y&&(t=y.createHTML(t)),e.innerHTML=t,e}}const $=e=>null===e||!("object"==typeof e||"function"==typeof e),w=e=>Array.isArray(e)||!(!e||!e[Symbol.iterator]);class k{constructor(e,t,i){this.dirty=!0,this.element=e,this.name=t,this.strings=i,this.parts=[];for(let e=0;e<i.length-1;e++)this.parts[e]=this._createPart()}_createPart(){return new S(this)}_getValue(){const e=this.strings,t=e.length-1,i=this.parts;if(1===t&&""===e[0]&&""===e[1]){const e=i[0].value;if("symbol"==typeof e)return String(e);if("string"==typeof e||!w(e))return e}let a="";for(let n=0;n<t;n++){a+=e[n];const t=i[n];if(void 0!==t){const e=t.value;if($(e)||!w(e))a+="string"==typeof e?e:String(e);else for(const t of e)a+="string"==typeof t?t:String(t)}}return a+=e[t],a}commit(){this.dirty&&(this.dirty=!1,this.element.setAttribute(this.name,this._getValue()))}}class S{constructor(e){this.value=void 0,this.committer=e}setValue(e){e===_||$(e)&&e===this.value||(this.value=e,b(e)||(this.committer.dirty=!0))}commit(){for(;b(this.value);){const e=this.value;this.value=_,e(this)}this.value!==_&&this.committer.commit()}}class P{constructor(e){this.value=void 0,this.__pendingValue=void 0,this.options=e}appendInto(e){this.startNode=e.appendChild(l()),this.endNode=e.appendChild(l())}insertAfterNode(e){this.startNode=e,this.endNode=e.nextSibling}appendIntoPart(e){e.__insert(this.startNode=l()),e.__insert(this.endNode=l())}insertAfterPart(e){e.__insert(this.startNode=l()),this.endNode=e.endNode,e.endNode=this.startNode}setValue(e){this.__pendingValue=e}commit(){if(null===this.startNode.parentNode)return;for(;b(this.__pendingValue);){const e=this.__pendingValue;this.__pendingValue=_,e(this)}const e=this.__pendingValue;e!==_&&($(e)?e!==this.value&&this.__commitText(e):e instanceof x?this.__commitTemplateResult(e):e instanceof Node?this.__commitNode(e):w(e)?this.__commitIterable(e):e===g?(this.value=g,this.clear()):this.__commitText(e))}__insert(e){this.endNode.parentNode.insertBefore(e,this.endNode)}__commitNode(e){this.value!==e&&(this.clear(),this.__insert(e),this.value=e)}__commitText(e){const t=this.startNode.nextSibling,i="string"==typeof(e=null==e?"":e)?e:String(e);t===this.endNode.previousSibling&&3===t.nodeType?t.data=i:this.__commitNode(document.createTextNode(i)),this.value=e}__commitTemplateResult(e){const t=this.options.templateFactory(e);if(this.value instanceof v&&this.value.template===t)this.value.update(e.values);else{const i=new v(t,e.processor,this.options),a=i._clone();i.update(e.values),this.__commitNode(a),this.value=i}}__commitIterable(e){Array.isArray(this.value)||(this.value=[],this.clear());const t=this.value;let i,a=0;for(const n of e)i=t[a],void 0===i&&(i=new P(this.options),t.push(i),0===a?i.appendIntoPart(this):i.insertAfterPart(t[a-1])),i.setValue(n),i.commit(),a++;a<t.length&&(t.length=a,this.clear(i&&i.endNode))}clear(e=this.startNode){t(this.startNode.parentNode,e.nextSibling,this.endNode)}}class C{constructor(e,t,i){if(this.value=void 0,this.__pendingValue=void 0,2!==i.length||""!==i[0]||""!==i[1])throw new Error("Boolean attributes can only contain a single expression");this.element=e,this.name=t,this.strings=i}setValue(e){this.__pendingValue=e}commit(){for(;b(this.__pendingValue);){const e=this.__pendingValue;this.__pendingValue=_,e(this)}if(this.__pendingValue===_)return;const e=!!this.__pendingValue;this.value!==e&&(e?this.element.setAttribute(this.name,""):this.element.removeAttribute(this.name),this.value=e),this.__pendingValue=_}}class M extends k{constructor(e,t,i){super(e,t,i),this.single=2===i.length&&""===i[0]&&""===i[1]}_createPart(){return new E(this)}_getValue(){return this.single?this.parts[0].value:super._getValue()}commit(){this.dirty&&(this.dirty=!1,this.element[this.name]=this._getValue())}}class E extends S{}let T=!1;(()=>{try{const e={get capture(){return T=!0,!1}};window.addEventListener("test",e,e),window.removeEventListener("test",e,e)}catch(e){}})();class L{constructor(e,t,i){this.value=void 0,this.__pendingValue=void 0,this.element=e,this.eventName=t,this.eventContext=i,this.__boundHandleEvent=e=>this.handleEvent(e)}setValue(e){this.__pendingValue=e}commit(){for(;b(this.__pendingValue);){const e=this.__pendingValue;this.__pendingValue=_,e(this)}if(this.__pendingValue===_)return;const e=this.__pendingValue,t=this.value,i=null==e||null!=t&&(e.capture!==t.capture||e.once!==t.once||e.passive!==t.passive),a=null!=e&&(null==t||i);i&&this.element.removeEventListener(this.eventName,this.__boundHandleEvent,this.__options),a&&(this.__options=j(e),this.element.addEventListener(this.eventName,this.__boundHandleEvent,this.__options)),this.value=e,this.__pendingValue=_}handleEvent(e){"function"==typeof this.value?this.value.call(this.eventContext||this.element,e):this.value.handleEvent(e)}}const j=e=>e&&(T?{capture:e.capture,passive:e.passive,once:e.once}:e.capture);function A(e){let t=I.get(e.type);void 0===t&&(t={stringsArray:new WeakMap,keyString:new Map},I.set(e.type,t));let a=t.stringsArray.get(e.strings);if(void 0!==a)return a;const n=e.strings.join(i);return a=t.keyString.get(n),void 0===a&&(a=new r(e,e.getTemplateElement()),t.keyString.set(n,a)),t.stringsArray.set(e.strings,a),a}const I=new Map,q=new WeakMap;const z=new class{handleAttributeExpressions(e,t,i,a){const n=t[0];if("."===n){return new M(e,t.slice(1),i).parts}if("@"===n)return[new L(e,t.slice(1),a.eventContext)];if("?"===n)return[new C(e,t.slice(1),i)];return new k(e,t,i).parts}handleTextExpression(e){return new P(e)}};"undefined"!=typeof window&&(window.litHtmlVersions||(window.litHtmlVersions=[])).push("1.4.1");const N=(e,...t)=>new x(e,t,"html",z),B=(e,t)=>`${e}--${t}`;let U=!0;void 0===window.ShadyCSS?U=!1:void 0===window.ShadyCSS.prepareTemplateDom&&(console.warn("Incompatible ShadyCSS version detected. Please update to at least @webcomponents/webcomponentsjs@2.0.2 and @webcomponents/shadycss@1.3.1."),U=!1);const V=e=>t=>{const a=B(t.type,e);let n=I.get(a);void 0===n&&(n={stringsArray:new WeakMap,keyString:new Map},I.set(a,n));let s=n.stringsArray.get(t.strings);if(void 0!==s)return s;const o=t.strings.join(i);if(s=n.keyString.get(o),void 0===s){const i=t.getTemplateElement();U&&window.ShadyCSS.prepareTemplateDom(i,e),s=new r(t,i),n.keyString.set(o,s)}return n.stringsArray.set(t.strings,s),s},Q=["html","svg"],D=new Set,R=(e,t,i)=>{D.add(e);const a=i?i.element:document.createElement("template"),n=t.querySelectorAll("style"),{length:s}=n;if(0===s)return void window.ShadyCSS.prepareTemplateStyles(a,e);const r=document.createElement("style");for(let e=0;e<s;e++){const t=n[e];t.parentNode.removeChild(t),r.textContent+=t.textContent}(e=>{Q.forEach(t=>{const i=I.get(B(t,e));void 0!==i&&i.keyString.forEach(e=>{const{element:{content:t}}=e,i=new Set;Array.from(t.querySelectorAll("style")).forEach(e=>{i.add(e)}),p(e,i)})})})(e);const o=a.content;i?function(e,t,i=null){const{element:{content:a},parts:n}=e;if(null==i)return void a.appendChild(t);const s=document.createTreeWalker(a,133,null,!1);let r=h(n),o=0,c=-1;for(;s.nextNode();)for(c++,s.currentNode===i&&(o=u(t),i.parentNode.insertBefore(t,i));-1!==r&&n[r].index===c;){if(o>0){for(;-1!==r;)n[r].index+=o,r=h(n,r);return}r=h(n,r)}}(i,r,o.firstChild):o.insertBefore(r,o.firstChild),window.ShadyCSS.prepareTemplateStyles(a,e);const c=o.querySelector("style");if(window.ShadyCSS.nativeShadow&&null!==c)t.insertBefore(c.cloneNode(!0),t.firstChild);else if(i){o.insertBefore(r,o.firstChild);const e=new Set;e.add(r),p(i,e)}};window.JSCompiler_renameProperty=(e,t)=>e;const H={toAttribute(e,t){switch(t){case Boolean:return e?"":null;case Object:case Array:return null==e?e:JSON.stringify(e)}return e},fromAttribute(e,t){switch(t){case Boolean:return null!==e;case Number:return null===e?null:Number(e);case Object:case Array:return JSON.parse(e)}return e}},F=(e,t)=>t!==e&&(t==t||e==e),O={attribute:!0,type:String,converter:H,reflect:!1,hasChanged:F},W="finalized";class Y extends HTMLElement{constructor(){super(),this.initialize()}static get observedAttributes(){this.finalize();const e=[];return this._classProperties.forEach((t,i)=>{const a=this._attributeNameForProperty(i,t);void 0!==a&&(this._attributeToPropertyMap.set(a,i),e.push(a))}),e}static _ensureClassProperties(){if(!this.hasOwnProperty(JSCompiler_renameProperty("_classProperties",this))){this._classProperties=new Map;const e=Object.getPrototypeOf(this)._classProperties;void 0!==e&&e.forEach((e,t)=>this._classProperties.set(t,e))}}static createProperty(e,t=O){if(this._ensureClassProperties(),this._classProperties.set(e,t),t.noAccessor||this.prototype.hasOwnProperty(e))return;const i="symbol"==typeof e?Symbol():`__${e}`,a=this.getPropertyDescriptor(e,i,t);void 0!==a&&Object.defineProperty(this.prototype,e,a)}static getPropertyDescriptor(e,t,i){return{get(){return this[t]},set(a){const n=this[e];this[t]=a,this.requestUpdateInternal(e,n,i)},configurable:!0,enumerable:!0}}static getPropertyOptions(e){return this._classProperties&&this._classProperties.get(e)||O}static finalize(){const e=Object.getPrototypeOf(this);if(e.hasOwnProperty(W)||e.finalize(),this[W]=!0,this._ensureClassProperties(),this._attributeToPropertyMap=new Map,this.hasOwnProperty(JSCompiler_renameProperty("properties",this))){const e=this.properties,t=[...Object.getOwnPropertyNames(e),..."function"==typeof Object.getOwnPropertySymbols?Object.getOwnPropertySymbols(e):[]];for(const i of t)this.createProperty(i,e[i])}}static _attributeNameForProperty(e,t){const i=t.attribute;return!1===i?void 0:"string"==typeof i?i:"string"==typeof e?e.toLowerCase():void 0}static _valueHasChanged(e,t,i=F){return i(e,t)}static _propertyValueFromAttribute(e,t){const i=t.type,a=t.converter||H,n="function"==typeof a?a:a.fromAttribute;return n?n(e,i):e}static _propertyValueToAttribute(e,t){if(void 0===t.reflect)return;const i=t.type,a=t.converter;return(a&&a.toAttribute||H.toAttribute)(e,i)}initialize(){this._updateState=0,this._updatePromise=new Promise(e=>this._enableUpdatingResolver=e),this._changedProperties=new Map,this._saveInstanceProperties(),this.requestUpdateInternal()}_saveInstanceProperties(){this.constructor._classProperties.forEach((e,t)=>{if(this.hasOwnProperty(t)){const e=this[t];delete this[t],this._instanceProperties||(this._instanceProperties=new Map),this._instanceProperties.set(t,e)}})}_applyInstanceProperties(){this._instanceProperties.forEach((e,t)=>this[t]=e),this._instanceProperties=void 0}connectedCallback(){this.enableUpdating()}enableUpdating(){void 0!==this._enableUpdatingResolver&&(this._enableUpdatingResolver(),this._enableUpdatingResolver=void 0)}disconnectedCallback(){}attributeChangedCallback(e,t,i){t!==i&&this._attributeToProperty(e,i)}_propertyToAttribute(e,t,i=O){const a=this.constructor,n=a._attributeNameForProperty(e,i);if(void 0!==n){const e=a._propertyValueToAttribute(t,i);if(void 0===e)return;this._updateState=8|this._updateState,null==e?this.removeAttribute(n):this.setAttribute(n,e),this._updateState=-9&this._updateState}}_attributeToProperty(e,t){if(8&this._updateState)return;const i=this.constructor,a=i._attributeToPropertyMap.get(e);if(void 0!==a){const e=i.getPropertyOptions(a);this._updateState=16|this._updateState,this[a]=i._propertyValueFromAttribute(t,e),this._updateState=-17&this._updateState}}requestUpdateInternal(e,t,i){let a=!0;if(void 0!==e){const n=this.constructor;i=i||n.getPropertyOptions(e),n._valueHasChanged(this[e],t,i.hasChanged)?(this._changedProperties.has(e)||this._changedProperties.set(e,t),!0!==i.reflect||16&this._updateState||(void 0===this._reflectingProperties&&(this._reflectingProperties=new Map),this._reflectingProperties.set(e,i))):a=!1}!this._hasRequestedUpdate&&a&&(this._updatePromise=this._enqueueUpdate())}requestUpdate(e,t){return this.requestUpdateInternal(e,t),this.updateComplete}async _enqueueUpdate(){this._updateState=4|this._updateState;try{await this._updatePromise}catch(e){}const e=this.performUpdate();return null!=e&&await e,!this._hasRequestedUpdate}get _hasRequestedUpdate(){return 4&this._updateState}get hasUpdated(){return 1&this._updateState}performUpdate(){if(!this._hasRequestedUpdate)return;this._instanceProperties&&this._applyInstanceProperties();let e=!1;const t=this._changedProperties;try{e=this.shouldUpdate(t),e?this.update(t):this._markUpdated()}catch(t){throw e=!1,this._markUpdated(),t}e&&(1&this._updateState||(this._updateState=1|this._updateState,this.firstUpdated(t)),this.updated(t))}_markUpdated(){this._changedProperties=new Map,this._updateState=-5&this._updateState}get updateComplete(){return this._getUpdateComplete()}_getUpdateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._updatePromise}shouldUpdate(e){return!0}update(e){void 0!==this._reflectingProperties&&this._reflectingProperties.size>0&&(this._reflectingProperties.forEach((e,t)=>this._propertyToAttribute(t,this[t],e)),this._reflectingProperties=void 0),this._markUpdated()}updated(e){}firstUpdated(e){}}Y[W]=!0;const J=window.ShadowRoot&&(void 0===window.ShadyCSS||window.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,G=Symbol();class X{constructor(e,t){if(t!==G)throw new Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=e}get styleSheet(){return void 0===this._styleSheet&&(J?(this._styleSheet=new CSSStyleSheet,this._styleSheet.replaceSync(this.cssText)):this._styleSheet=null),this._styleSheet}toString(){return this.cssText}}const K=(e,...t)=>{const i=t.reduce((t,i,a)=>t+(e=>{if(e instanceof X)return e.cssText;if("number"==typeof e)return e;throw new Error(`Value passed to 'css' function must be a 'css' function result: ${e}. Use 'unsafeCSS' to pass non-literal values, but\n            take care to ensure page security.`)})(i)+e[a+1],e[0]);return new X(i,G)};(window.litElementVersions||(window.litElementVersions=[])).push("2.5.1");const Z={};class ee extends Y{static getStyles(){return this.styles}static _getUniqueStyles(){if(this.hasOwnProperty(JSCompiler_renameProperty("_styles",this)))return;const e=this.getStyles();if(Array.isArray(e)){const t=(e,i)=>e.reduceRight((e,i)=>Array.isArray(i)?t(i,e):(e.add(i),e),i),i=t(e,new Set),a=[];i.forEach(e=>a.unshift(e)),this._styles=a}else this._styles=void 0===e?[]:[e];this._styles=this._styles.map(e=>{if(e instanceof CSSStyleSheet&&!J){const t=Array.prototype.slice.call(e.cssRules).reduce((e,t)=>e+t.cssText,"");return new X(String(t),G)}return e})}initialize(){super.initialize(),this.constructor._getUniqueStyles(),this.renderRoot=this.createRenderRoot(),window.ShadowRoot&&this.renderRoot instanceof window.ShadowRoot&&this.adoptStyles()}createRenderRoot(){return this.attachShadow(this.constructor.shadowRootOptions)}adoptStyles(){const e=this.constructor._styles;0!==e.length&&(void 0===window.ShadyCSS||window.ShadyCSS.nativeShadow?J?this.renderRoot.adoptedStyleSheets=e.map(e=>e instanceof CSSStyleSheet?e:e.styleSheet):this._needsShimAdoptedStyleSheets=!0:window.ShadyCSS.ScopingShim.prepareAdoptedCssText(e.map(e=>e.cssText),this.localName))}connectedCallback(){super.connectedCallback(),this.hasUpdated&&void 0!==window.ShadyCSS&&window.ShadyCSS.styleElement(this)}update(e){const t=this.render();super.update(e),t!==Z&&this.constructor.render(t,this.renderRoot,{scopeName:this.localName,eventContext:this}),this._needsShimAdoptedStyleSheets&&(this._needsShimAdoptedStyleSheets=!1,this.constructor._styles.forEach(e=>{const t=document.createElement("style");t.textContent=e.cssText,this.renderRoot.appendChild(t)}))}render(){return Z}}function te(){return void 0!==import.meta&&import.meta.url?new URL("translations/",import.meta.url).href:"/local/universal-device-card/translations/"}ee.finalized=!0,ee.render=(e,i,a)=>{if(!a||"object"!=typeof a||!a.scopeName)throw new Error("The `scopeName` option is required.");const n=a.scopeName,s=q.has(i),r=U&&11===i.nodeType&&!!i.host,o=r&&!D.has(n),c=o?document.createDocumentFragment():i;if(((e,i,a)=>{let n=q.get(i);void 0===n&&(t(i,i.firstChild),q.set(i,n=new P(Object.assign({templateFactory:A},a))),n.appendInto(i)),n.setValue(e),n.commit()})(e,c,Object.assign({templateFactory:V(n)},a)),o){const e=q.get(c);q.delete(c);const a=e.value instanceof v?e.value.template:void 0;R(n,c,a),t(i,i.firstChild),i.appendChild(c),q.set(i,e)}!s&&r&&window.ShadyCSS.styleElement(i.host)},ee.shadowRootOptions={mode:"open"};const ie={"zh-TW":{target_temp:"目標溫度",target_humidity:"目標濕度",position:"位置",tilt:"傾斜",open_tilt:"開啟傾斜",close_tilt:"關閉傾斜",open:"開啟",close:"關閉",stop:"停止",start:"開始",pause:"暫停",return_home:"回充",no_controls:"無其他控制項目",unavailable:"無法使用",device:"設備",cleaning:"清掃中",docked:"充電中",returning:"回充中",idle:"待機",paused:"已暫停",error:"錯誤",cool:"冷氣",heat:"暖氣",dry:"除濕",fan_only:"送風",auto:"自動",off:"關閉",click_to_view:"點擊查看完整內容",editor_entity:"實體 (Entity)",editor_entity_required:"* 必填",editor_entity_select:"選擇實體...",editor_layout:"佈局模式 (Layout)",editor_layout_standard:"標準版 (Standard)",editor_layout_mini:"迷你版 (Mini)",editor_layout_bar:"長條型 (Bar)",editor_language:"語言 (Language)",editor_language_auto:"自動 (Auto)",editor_disable_popup:"禁用彈出面板",editor_show_buttons:"主畫面顯示按鈕 (Button Entity IDs)",editor_show_buttons_desc:"輸入 button 實體 ID，用逗號分隔",editor_filters_title:"彈出面板過濾器 (Popup Filters)",editor_filters_desc:"使用逗號分隔多個值，例如: sensor,switch",editor_exclude_domains:"排除的 Domain",editor_include_domains:"僅包含的 Domain",editor_exclude_entities:"排除的實體 ID",editor_include_entities:"僅包含的實體 ID",editor_exclude_sensor_classes:"排除的 Sensor Device Class",editor_include_sensor_classes:"僅包含的 Sensor Device Class",mass_queue_playlist:"播放清單",mass_queue_loading:"載入中…",mass_library:"音樂資料庫",mass_library_loading:"載入中…",mass_search:"搜尋",mass_search_placeholder:"藝人、專輯或曲目…",mass_search_loading:"載入中…",mass_search_button:"搜尋"},"zh-CN":{target_temp:"目标温度",target_humidity:"目标湿度",position:"位置",tilt:"倾斜",open_tilt:"开启倾斜",close_tilt:"关闭倾斜",open:"打开",close:"关闭",stop:"停止",start:"开始",pause:"暂停",return_home:"回充",no_controls:"无其他控制项目",unavailable:"不可用",device:"设备",cleaning:"清扫中",docked:"充电中",returning:"回充中",idle:"待机",paused:"已暂停",error:"错误",cool:"制冷",heat:"制热",dry:"除湿",fan_only:"送风",auto:"自动",off:"关闭",click_to_view:"点击查看完整内容",editor_entity:"实体 (Entity)",editor_entity_required:"* 必填",editor_entity_select:"选择实体...",editor_layout:"布局模式 (Layout)",editor_layout_standard:"标准版 (Standard)",editor_layout_mini:"迷你版 (Mini)",editor_layout_bar:"长条型 (Bar)",editor_language:"语言 (Language)",editor_language_auto:"自动 (Auto)",editor_disable_popup:"禁用弹出面板",editor_show_buttons:"主画面显示按钮 (Button Entity IDs)",editor_show_buttons_desc:"输入 button 实体 ID，用逗号分隔",editor_filters_title:"弹出面板过滤器 (Popup Filters)",editor_filters_desc:"使用逗号分隔多个值，例如: sensor,switch",editor_exclude_domains:"排除的 Domain",editor_include_domains:"仅包含的 Domain",editor_exclude_entities:"排除的实体 ID",editor_include_entities:"仅包含的实体 ID",editor_exclude_sensor_classes:"排除的 Sensor Device Class",editor_include_sensor_classes:"仅包含的 Sensor Device Class",mass_queue_playlist:"播放列表",mass_queue_loading:"加载中…",mass_library:"音乐资料库",mass_library_loading:"加载中…",mass_search:"搜索",mass_search_placeholder:"艺人、专辑或曲目…",mass_search_loading:"加载中…",mass_search_button:"搜索"},en:{target_temp:"Target Temp",target_humidity:"Target Humidity",position:"Position",tilt:"Tilt",open_tilt:"Open Tilt",close_tilt:"Close Tilt",open:"Open",close:"Close",stop:"Stop",start:"Start",pause:"Pause",return_home:"Return",no_controls:"No additional controls",unavailable:"Unavailable",device:"Device",cleaning:"Cleaning",docked:"Docked",returning:"Returning",idle:"Idle",paused:"Paused",error:"Error",cool:"Cool",heat:"Heat",dry:"Dry",fan_only:"Fan",auto:"Auto",off:"Off",click_to_view:"Click to view full text",editor_entity:"Entity",editor_entity_required:"* Required",editor_entity_select:"Select entity...",editor_layout:"Layout",editor_layout_standard:"Standard",editor_layout_mini:"Mini",editor_layout_bar:"Bar",editor_language:"Language",editor_language_auto:"Auto",editor_disable_popup:"Disable Popup",editor_show_buttons:"Show Buttons on Main (Button Entity IDs)",editor_show_buttons_desc:"Enter button entity IDs, comma separated",editor_filters_title:"Popup Filters",editor_filters_desc:"Use comma to separate multiple values, e.g: sensor,switch",editor_exclude_domains:"Exclude Domains",editor_include_domains:"Include Domains Only",editor_exclude_entities:"Exclude Entity IDs",editor_include_entities:"Include Entity IDs Only",editor_exclude_sensor_classes:"Exclude Sensor Classes",editor_include_sensor_classes:"Include Sensor Classes Only",mass_queue_playlist:"Queue",mass_queue_loading:"Loading…",mass_library:"Library",mass_library_loading:"Loading…",mass_search:"Search",mass_search_placeholder:"Artist, album or track…",mass_search_loading:"Loading…",mass_search_button:"Search"},ja:{target_temp:"目標温度",target_humidity:"目標湿度",position:"位置",tilt:"傾斜",open_tilt:"傾斜を開く",close_tilt:"傾斜を閉じる",open:"開く",close:"閉じる",stop:"停止",start:"スタート",pause:"一時停止",return_home:"帰還",no_controls:"他のコントロールなし",unavailable:"利用不可",device:"デバイス",cleaning:"掃除中",docked:"充電中",returning:"帰還中",idle:"待機",paused:"一時停止",error:"エラー",cool:"冷房",heat:"暖房",dry:"除湿",fan_only:"送風",auto:"自動",off:"オフ",click_to_view:"クリックして全文を表示",editor_entity:"エンティティ",editor_entity_required:"* 必須",editor_entity_select:"エンティティを選択...",editor_layout:"レイアウト",editor_layout_standard:"スタンダード",editor_layout_mini:"ミニ",editor_layout_bar:"バー",editor_language:"言語",editor_language_auto:"自動",editor_disable_popup:"ポップアップを無効化",editor_show_buttons:"メイン画面にボタン表示",editor_show_buttons_desc:"ボタンエンティティIDをカンマ区切りで入力",editor_filters_title:"ポップアップフィルター",editor_filters_desc:"カンマで複数の値を区切る",editor_exclude_domains:"除外するドメイン",editor_include_domains:"含めるドメインのみ",editor_exclude_entities:"除外するエンティティID",editor_include_entities:"含めるエンティティIDのみ",editor_exclude_sensor_classes:"除外するセンサークラス",editor_include_sensor_classes:"含めるセンサークラスのみ",mass_queue_playlist:"再生リスト",mass_queue_loading:"読み込み中…",mass_library:"音楽ライブラリ",mass_library_loading:"読み込み中…",mass_search:"検索",mass_search_placeholder:"アーティスト、アルバム、曲…",mass_search_loading:"読み込み中…",mass_search_button:"検索"}},ae=K`
+const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window.customElements.polyfillWrapFlushCallback,t=(e,t,i=null)=>{for(;t!==i;){const i=t.nextSibling;e.removeChild(t),t=i}},i=`{{lit-${String(Math.random()).slice(2)}}}`,a=`\x3c!--${i}--\x3e`,s=new RegExp(`${i}|${a}`),n="$lit$";class r{constructor(e,t){this.parts=[],this.element=t;const a=[],r=[],c=document.createTreeWalker(t.content,133,null,!1);let p=0,u=-1,h=0;const{strings:m,values:{length:b}}=e;for(;h<b;){const e=c.nextNode();if(null!==e){if(u++,1===e.nodeType){if(e.hasAttributes()){const t=e.attributes,{length:i}=t;let a=0;for(let e=0;e<i;e++)o(t[e].name,n)&&a++;for(;a-- >0;){const t=m[h],i=d.exec(t)[2],a=i.toLowerCase()+n,r=e.getAttribute(a);e.removeAttribute(a);const o=r.split(s);this.parts.push({type:"attribute",index:u,name:i,strings:o}),h+=o.length-1}}"TEMPLATE"===e.tagName&&(r.push(e),c.currentNode=e.content)}else if(3===e.nodeType){const t=e.data;if(t.indexOf(i)>=0){const i=e.parentNode,r=t.split(s),c=r.length-1;for(let t=0;t<c;t++){let a,s=r[t];if(""===s)a=l();else{const e=d.exec(s);null!==e&&o(e[2],n)&&(s=s.slice(0,e.index)+e[1]+e[2].slice(0,-5)+e[3]),a=document.createTextNode(s)}i.insertBefore(a,e),this.parts.push({type:"node",index:++u})}""===r[c]?(i.insertBefore(l(),e),a.push(e)):e.data=r[c],h+=c}}else if(8===e.nodeType)if(e.data===i){const t=e.parentNode;null!==e.previousSibling&&u!==p||(u++,t.insertBefore(l(),e)),p=u,this.parts.push({type:"node",index:u}),null===e.nextSibling?e.data="":(a.push(e),u--),h++}else{let t=-1;for(;-1!==(t=e.data.indexOf(i,t+1));)this.parts.push({type:"node",index:-1}),h++}}else c.currentNode=r.pop()}for(const e of a)e.parentNode.removeChild(e)}}const o=(e,t)=>{const i=e.length-t.length;return i>=0&&e.slice(i)===t},c=e=>-1!==e.index,l=()=>document.createComment(""),d=/([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;function p(e,t){const{element:{content:i},parts:a}=e,s=document.createTreeWalker(i,133,null,!1);let n=h(a),r=a[n],o=-1,c=0;const l=[];let d=null;for(;s.nextNode();){o++;const e=s.currentNode;for(e.previousSibling===d&&(d=null),t.has(e)&&(l.push(e),null===d&&(d=e)),null!==d&&c++;void 0!==r&&r.index===o;)r.index=null!==d?-1:r.index-c,n=h(a,n),r=a[n]}l.forEach(e=>e.parentNode.removeChild(e))}const u=e=>{let t=11===e.nodeType?0:1;const i=document.createTreeWalker(e,133,null,!1);for(;i.nextNode();)t++;return t},h=(e,t=-1)=>{for(let i=t+1;i<e.length;i++){const t=e[i];if(c(t))return i}return-1};const m=new WeakMap,b=e=>"function"==typeof e&&m.has(e),g={},_={};class v{constructor(e,t,i){this.__parts=[],this.template=e,this.processor=t,this.options=i}update(e){let t=0;for(const i of this.__parts)void 0!==i&&i.setValue(e[t]),t++;for(const e of this.__parts)void 0!==e&&e.commit()}_clone(){const t=e?this.template.element.content.cloneNode(!0):document.importNode(this.template.element.content,!0),i=[],a=this.template.parts,s=document.createTreeWalker(t,133,null,!1);let n,r=0,o=0,l=s.nextNode();for(;r<a.length;)if(n=a[r],c(n)){for(;o<n.index;)o++,"TEMPLATE"===l.nodeName&&(i.push(l),s.currentNode=l.content),null===(l=s.nextNode())&&(s.currentNode=i.pop(),l=s.nextNode());if("node"===n.type){const e=this.processor.handleTextExpression(this.options);e.insertAfterNode(l.previousSibling),this.__parts.push(e)}else this.__parts.push(...this.processor.handleAttributeExpressions(l,n.name,n.strings,this.options));r++}else this.__parts.push(void 0),r++;return e&&(document.adoptNode(t),customElements.upgrade(t)),t}}const y=window.trustedTypes&&trustedTypes.createPolicy("lit-html",{createHTML:e=>e}),f=` ${i} `;class x{constructor(e,t,i,a){this.strings=e,this.values=t,this.type=i,this.processor=a}getHTML(){const e=this.strings.length-1;let t="",s=!1;for(let r=0;r<e;r++){const e=this.strings[r],o=e.lastIndexOf("\x3c!--");s=(o>-1||s)&&-1===e.indexOf("--\x3e",o+1);const c=d.exec(e);t+=null===c?e+(s?f:a):e.substr(0,c.index)+c[1]+c[2]+n+c[3]+i}return t+=this.strings[e],t}getTemplateElement(){const e=document.createElement("template");let t=this.getHTML();return void 0!==y&&(t=y.createHTML(t)),e.innerHTML=t,e}}const $=e=>null===e||!("object"==typeof e||"function"==typeof e),w=e=>Array.isArray(e)||!(!e||!e[Symbol.iterator]);class S{constructor(e,t,i){this.dirty=!0,this.element=e,this.name=t,this.strings=i,this.parts=[];for(let e=0;e<i.length-1;e++)this.parts[e]=this._createPart()}_createPart(){return new k(this)}_getValue(){const e=this.strings,t=e.length-1,i=this.parts;if(1===t&&""===e[0]&&""===e[1]){const e=i[0].value;if("symbol"==typeof e)return String(e);if("string"==typeof e||!w(e))return e}let a="";for(let s=0;s<t;s++){a+=e[s];const t=i[s];if(void 0!==t){const e=t.value;if($(e)||!w(e))a+="string"==typeof e?e:String(e);else for(const t of e)a+="string"==typeof t?t:String(t)}}return a+=e[t],a}commit(){this.dirty&&(this.dirty=!1,this.element.setAttribute(this.name,this._getValue()))}}class k{constructor(e){this.value=void 0,this.committer=e}setValue(e){e===g||$(e)&&e===this.value||(this.value=e,b(e)||(this.committer.dirty=!0))}commit(){for(;b(this.value);){const e=this.value;this.value=g,e(this)}this.value!==g&&this.committer.commit()}}class P{constructor(e){this.value=void 0,this.__pendingValue=void 0,this.options=e}appendInto(e){this.startNode=e.appendChild(l()),this.endNode=e.appendChild(l())}insertAfterNode(e){this.startNode=e,this.endNode=e.nextSibling}appendIntoPart(e){e.__insert(this.startNode=l()),e.__insert(this.endNode=l())}insertAfterPart(e){e.__insert(this.startNode=l()),this.endNode=e.endNode,e.endNode=this.startNode}setValue(e){this.__pendingValue=e}commit(){if(null===this.startNode.parentNode)return;for(;b(this.__pendingValue);){const e=this.__pendingValue;this.__pendingValue=g,e(this)}const e=this.__pendingValue;e!==g&&($(e)?e!==this.value&&this.__commitText(e):e instanceof x?this.__commitTemplateResult(e):e instanceof Node?this.__commitNode(e):w(e)?this.__commitIterable(e):e===_?(this.value=_,this.clear()):this.__commitText(e))}__insert(e){this.endNode.parentNode.insertBefore(e,this.endNode)}__commitNode(e){this.value!==e&&(this.clear(),this.__insert(e),this.value=e)}__commitText(e){const t=this.startNode.nextSibling,i="string"==typeof(e=null==e?"":e)?e:String(e);t===this.endNode.previousSibling&&3===t.nodeType?t.data=i:this.__commitNode(document.createTextNode(i)),this.value=e}__commitTemplateResult(e){const t=this.options.templateFactory(e);if(this.value instanceof v&&this.value.template===t)this.value.update(e.values);else{const i=new v(t,e.processor,this.options),a=i._clone();i.update(e.values),this.__commitNode(a),this.value=i}}__commitIterable(e){Array.isArray(this.value)||(this.value=[],this.clear());const t=this.value;let i,a=0;for(const s of e)i=t[a],void 0===i&&(i=new P(this.options),t.push(i),0===a?i.appendIntoPart(this):i.insertAfterPart(t[a-1])),i.setValue(s),i.commit(),a++;a<t.length&&(t.length=a,this.clear(i&&i.endNode))}clear(e=this.startNode){t(this.startNode.parentNode,e.nextSibling,this.endNode)}}class C{constructor(e,t,i){if(this.value=void 0,this.__pendingValue=void 0,2!==i.length||""!==i[0]||""!==i[1])throw new Error("Boolean attributes can only contain a single expression");this.element=e,this.name=t,this.strings=i}setValue(e){this.__pendingValue=e}commit(){for(;b(this.__pendingValue);){const e=this.__pendingValue;this.__pendingValue=g,e(this)}if(this.__pendingValue===g)return;const e=!!this.__pendingValue;this.value!==e&&(e?this.element.setAttribute(this.name,""):this.element.removeAttribute(this.name),this.value=e),this.__pendingValue=g}}class M extends S{constructor(e,t,i){super(e,t,i),this.single=2===i.length&&""===i[0]&&""===i[1]}_createPart(){return new E(this)}_getValue(){return this.single?this.parts[0].value:super._getValue()}commit(){this.dirty&&(this.dirty=!1,this.element[this.name]=this._getValue())}}class E extends k{}let T=!1;(()=>{try{const e={get capture(){return T=!0,!1}};window.addEventListener("test",e,e),window.removeEventListener("test",e,e)}catch(e){}})();class L{constructor(e,t,i){this.value=void 0,this.__pendingValue=void 0,this.element=e,this.eventName=t,this.eventContext=i,this.__boundHandleEvent=e=>this.handleEvent(e)}setValue(e){this.__pendingValue=e}commit(){for(;b(this.__pendingValue);){const e=this.__pendingValue;this.__pendingValue=g,e(this)}if(this.__pendingValue===g)return;const e=this.__pendingValue,t=this.value,i=null==e||null!=t&&(e.capture!==t.capture||e.once!==t.once||e.passive!==t.passive),a=null!=e&&(null==t||i);i&&this.element.removeEventListener(this.eventName,this.__boundHandleEvent,this.__options),a&&(this.__options=j(e),this.element.addEventListener(this.eventName,this.__boundHandleEvent,this.__options)),this.value=e,this.__pendingValue=g}handleEvent(e){"function"==typeof this.value?this.value.call(this.eventContext||this.element,e):this.value.handleEvent(e)}}const j=e=>e&&(T?{capture:e.capture,passive:e.passive,once:e.once}:e.capture);function A(e){let t=I.get(e.type);void 0===t&&(t={stringsArray:new WeakMap,keyString:new Map},I.set(e.type,t));let a=t.stringsArray.get(e.strings);if(void 0!==a)return a;const s=e.strings.join(i);return a=t.keyString.get(s),void 0===a&&(a=new r(e,e.getTemplateElement()),t.keyString.set(s,a)),t.stringsArray.set(e.strings,a),a}const I=new Map,q=new WeakMap;const z=new class{handleAttributeExpressions(e,t,i,a){const s=t[0];if("."===s){return new M(e,t.slice(1),i).parts}if("@"===s)return[new L(e,t.slice(1),a.eventContext)];if("?"===s)return[new C(e,t.slice(1),i)];return new S(e,t,i).parts}handleTextExpression(e){return new P(e)}};"undefined"!=typeof window&&(window.litHtmlVersions||(window.litHtmlVersions=[])).push("1.4.1");const N=(e,...t)=>new x(e,t,"html",z),B=(e,t)=>`${e}--${t}`;let U=!0;void 0===window.ShadyCSS?U=!1:void 0===window.ShadyCSS.prepareTemplateDom&&(console.warn("Incompatible ShadyCSS version detected. Please update to at least @webcomponents/webcomponentsjs@2.0.2 and @webcomponents/shadycss@1.3.1."),U=!1);const H=e=>t=>{const a=B(t.type,e);let s=I.get(a);void 0===s&&(s={stringsArray:new WeakMap,keyString:new Map},I.set(a,s));let n=s.stringsArray.get(t.strings);if(void 0!==n)return n;const o=t.strings.join(i);if(n=s.keyString.get(o),void 0===n){const i=t.getTemplateElement();U&&window.ShadyCSS.prepareTemplateDom(i,e),n=new r(t,i),s.keyString.set(o,n)}return s.stringsArray.set(t.strings,n),n},D=["html","svg"],V=new Set,Q=(e,t,i)=>{V.add(e);const a=i?i.element:document.createElement("template"),s=t.querySelectorAll("style"),{length:n}=s;if(0===n)return void window.ShadyCSS.prepareTemplateStyles(a,e);const r=document.createElement("style");for(let e=0;e<n;e++){const t=s[e];t.parentNode.removeChild(t),r.textContent+=t.textContent}(e=>{D.forEach(t=>{const i=I.get(B(t,e));void 0!==i&&i.keyString.forEach(e=>{const{element:{content:t}}=e,i=new Set;Array.from(t.querySelectorAll("style")).forEach(e=>{i.add(e)}),p(e,i)})})})(e);const o=a.content;i?function(e,t,i=null){const{element:{content:a},parts:s}=e;if(null==i)return void a.appendChild(t);const n=document.createTreeWalker(a,133,null,!1);let r=h(s),o=0,c=-1;for(;n.nextNode();)for(c++,n.currentNode===i&&(o=u(t),i.parentNode.insertBefore(t,i));-1!==r&&s[r].index===c;){if(o>0){for(;-1!==r;)s[r].index+=o,r=h(s,r);return}r=h(s,r)}}(i,r,o.firstChild):o.insertBefore(r,o.firstChild),window.ShadyCSS.prepareTemplateStyles(a,e);const c=o.querySelector("style");if(window.ShadyCSS.nativeShadow&&null!==c)t.insertBefore(c.cloneNode(!0),t.firstChild);else if(i){o.insertBefore(r,o.firstChild);const e=new Set;e.add(r),p(i,e)}};window.JSCompiler_renameProperty=(e,t)=>e;const R={toAttribute(e,t){switch(t){case Boolean:return e?"":null;case Object:case Array:return null==e?e:JSON.stringify(e)}return e},fromAttribute(e,t){switch(t){case Boolean:return null!==e;case Number:return null===e?null:Number(e);case Object:case Array:return JSON.parse(e)}return e}},O=(e,t)=>t!==e&&(t==t||e==e),F={attribute:!0,type:String,converter:R,reflect:!1,hasChanged:O},W="finalized";class Y extends HTMLElement{constructor(){super(),this.initialize()}static get observedAttributes(){this.finalize();const e=[];return this._classProperties.forEach((t,i)=>{const a=this._attributeNameForProperty(i,t);void 0!==a&&(this._attributeToPropertyMap.set(a,i),e.push(a))}),e}static _ensureClassProperties(){if(!this.hasOwnProperty(JSCompiler_renameProperty("_classProperties",this))){this._classProperties=new Map;const e=Object.getPrototypeOf(this)._classProperties;void 0!==e&&e.forEach((e,t)=>this._classProperties.set(t,e))}}static createProperty(e,t=F){if(this._ensureClassProperties(),this._classProperties.set(e,t),t.noAccessor||this.prototype.hasOwnProperty(e))return;const i="symbol"==typeof e?Symbol():`__${e}`,a=this.getPropertyDescriptor(e,i,t);void 0!==a&&Object.defineProperty(this.prototype,e,a)}static getPropertyDescriptor(e,t,i){return{get(){return this[t]},set(a){const s=this[e];this[t]=a,this.requestUpdateInternal(e,s,i)},configurable:!0,enumerable:!0}}static getPropertyOptions(e){return this._classProperties&&this._classProperties.get(e)||F}static finalize(){const e=Object.getPrototypeOf(this);if(e.hasOwnProperty(W)||e.finalize(),this[W]=!0,this._ensureClassProperties(),this._attributeToPropertyMap=new Map,this.hasOwnProperty(JSCompiler_renameProperty("properties",this))){const e=this.properties,t=[...Object.getOwnPropertyNames(e),..."function"==typeof Object.getOwnPropertySymbols?Object.getOwnPropertySymbols(e):[]];for(const i of t)this.createProperty(i,e[i])}}static _attributeNameForProperty(e,t){const i=t.attribute;return!1===i?void 0:"string"==typeof i?i:"string"==typeof e?e.toLowerCase():void 0}static _valueHasChanged(e,t,i=O){return i(e,t)}static _propertyValueFromAttribute(e,t){const i=t.type,a=t.converter||R,s="function"==typeof a?a:a.fromAttribute;return s?s(e,i):e}static _propertyValueToAttribute(e,t){if(void 0===t.reflect)return;const i=t.type,a=t.converter;return(a&&a.toAttribute||R.toAttribute)(e,i)}initialize(){this._updateState=0,this._updatePromise=new Promise(e=>this._enableUpdatingResolver=e),this._changedProperties=new Map,this._saveInstanceProperties(),this.requestUpdateInternal()}_saveInstanceProperties(){this.constructor._classProperties.forEach((e,t)=>{if(this.hasOwnProperty(t)){const e=this[t];delete this[t],this._instanceProperties||(this._instanceProperties=new Map),this._instanceProperties.set(t,e)}})}_applyInstanceProperties(){this._instanceProperties.forEach((e,t)=>this[t]=e),this._instanceProperties=void 0}connectedCallback(){this.enableUpdating()}enableUpdating(){void 0!==this._enableUpdatingResolver&&(this._enableUpdatingResolver(),this._enableUpdatingResolver=void 0)}disconnectedCallback(){}attributeChangedCallback(e,t,i){t!==i&&this._attributeToProperty(e,i)}_propertyToAttribute(e,t,i=F){const a=this.constructor,s=a._attributeNameForProperty(e,i);if(void 0!==s){const e=a._propertyValueToAttribute(t,i);if(void 0===e)return;this._updateState=8|this._updateState,null==e?this.removeAttribute(s):this.setAttribute(s,e),this._updateState=-9&this._updateState}}_attributeToProperty(e,t){if(8&this._updateState)return;const i=this.constructor,a=i._attributeToPropertyMap.get(e);if(void 0!==a){const e=i.getPropertyOptions(a);this._updateState=16|this._updateState,this[a]=i._propertyValueFromAttribute(t,e),this._updateState=-17&this._updateState}}requestUpdateInternal(e,t,i){let a=!0;if(void 0!==e){const s=this.constructor;i=i||s.getPropertyOptions(e),s._valueHasChanged(this[e],t,i.hasChanged)?(this._changedProperties.has(e)||this._changedProperties.set(e,t),!0!==i.reflect||16&this._updateState||(void 0===this._reflectingProperties&&(this._reflectingProperties=new Map),this._reflectingProperties.set(e,i))):a=!1}!this._hasRequestedUpdate&&a&&(this._updatePromise=this._enqueueUpdate())}requestUpdate(e,t){return this.requestUpdateInternal(e,t),this.updateComplete}async _enqueueUpdate(){this._updateState=4|this._updateState;try{await this._updatePromise}catch(e){}const e=this.performUpdate();return null!=e&&await e,!this._hasRequestedUpdate}get _hasRequestedUpdate(){return 4&this._updateState}get hasUpdated(){return 1&this._updateState}performUpdate(){if(!this._hasRequestedUpdate)return;this._instanceProperties&&this._applyInstanceProperties();let e=!1;const t=this._changedProperties;try{e=this.shouldUpdate(t),e?this.update(t):this._markUpdated()}catch(t){throw e=!1,this._markUpdated(),t}e&&(1&this._updateState||(this._updateState=1|this._updateState,this.firstUpdated(t)),this.updated(t))}_markUpdated(){this._changedProperties=new Map,this._updateState=-5&this._updateState}get updateComplete(){return this._getUpdateComplete()}_getUpdateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._updatePromise}shouldUpdate(e){return!0}update(e){void 0!==this._reflectingProperties&&this._reflectingProperties.size>0&&(this._reflectingProperties.forEach((e,t)=>this._propertyToAttribute(t,this[t],e)),this._reflectingProperties=void 0),this._markUpdated()}updated(e){}firstUpdated(e){}}Y[W]=!0;const J=window.ShadowRoot&&(void 0===window.ShadyCSS||window.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,X=Symbol();class G{constructor(e,t){if(t!==X)throw new Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=e}get styleSheet(){return void 0===this._styleSheet&&(J?(this._styleSheet=new CSSStyleSheet,this._styleSheet.replaceSync(this.cssText)):this._styleSheet=null),this._styleSheet}toString(){return this.cssText}}const K=(e,...t)=>{const i=t.reduce((t,i,a)=>t+(e=>{if(e instanceof G)return e.cssText;if("number"==typeof e)return e;throw new Error(`Value passed to 'css' function must be a 'css' function result: ${e}. Use 'unsafeCSS' to pass non-literal values, but\n            take care to ensure page security.`)})(i)+e[a+1],e[0]);return new G(i,X)};(window.litElementVersions||(window.litElementVersions=[])).push("2.5.1");const Z={};class ee extends Y{static getStyles(){return this.styles}static _getUniqueStyles(){if(this.hasOwnProperty(JSCompiler_renameProperty("_styles",this)))return;const e=this.getStyles();if(Array.isArray(e)){const t=(e,i)=>e.reduceRight((e,i)=>Array.isArray(i)?t(i,e):(e.add(i),e),i),i=t(e,new Set),a=[];i.forEach(e=>a.unshift(e)),this._styles=a}else this._styles=void 0===e?[]:[e];this._styles=this._styles.map(e=>{if(e instanceof CSSStyleSheet&&!J){const t=Array.prototype.slice.call(e.cssRules).reduce((e,t)=>e+t.cssText,"");return new G(String(t),X)}return e})}initialize(){super.initialize(),this.constructor._getUniqueStyles(),this.renderRoot=this.createRenderRoot(),window.ShadowRoot&&this.renderRoot instanceof window.ShadowRoot&&this.adoptStyles()}createRenderRoot(){return this.attachShadow(this.constructor.shadowRootOptions)}adoptStyles(){const e=this.constructor._styles;0!==e.length&&(void 0===window.ShadyCSS||window.ShadyCSS.nativeShadow?J?this.renderRoot.adoptedStyleSheets=e.map(e=>e instanceof CSSStyleSheet?e:e.styleSheet):this._needsShimAdoptedStyleSheets=!0:window.ShadyCSS.ScopingShim.prepareAdoptedCssText(e.map(e=>e.cssText),this.localName))}connectedCallback(){super.connectedCallback(),this.hasUpdated&&void 0!==window.ShadyCSS&&window.ShadyCSS.styleElement(this)}update(e){const t=this.render();super.update(e),t!==Z&&this.constructor.render(t,this.renderRoot,{scopeName:this.localName,eventContext:this}),this._needsShimAdoptedStyleSheets&&(this._needsShimAdoptedStyleSheets=!1,this.constructor._styles.forEach(e=>{const t=document.createElement("style");t.textContent=e.cssText,this.renderRoot.appendChild(t)}))}render(){return Z}}function te(){return void 0!==import.meta&&import.meta.url?new URL("translations/",import.meta.url).href:"/local/universal-device-card/translations/"}ee.finalized=!0,ee.render=(e,i,a)=>{if(!a||"object"!=typeof a||!a.scopeName)throw new Error("The `scopeName` option is required.");const s=a.scopeName,n=q.has(i),r=U&&11===i.nodeType&&!!i.host,o=r&&!V.has(s),c=o?document.createDocumentFragment():i;if(((e,i,a)=>{let s=q.get(i);void 0===s&&(t(i,i.firstChild),q.set(i,s=new P(Object.assign({templateFactory:A},a))),s.appendInto(i)),s.setValue(e),s.commit()})(e,c,Object.assign({templateFactory:H(s)},a)),o){const e=q.get(c);q.delete(c);const a=e.value instanceof v?e.value.template:void 0;Q(s,c,a),t(i,i.firstChild),i.appendChild(c),q.set(i,e)}!n&&r&&window.ShadyCSS.styleElement(i.host)},ee.shadowRootOptions={mode:"open"};const ie={"zh-TW":{target_temp:"目標溫度",target_humidity:"目標濕度",position:"位置",tilt:"傾斜",open_tilt:"開啟傾斜",close_tilt:"關閉傾斜",open:"開啟",close:"關閉",stop:"停止",start:"開始",pause:"暫停",return_home:"回充",no_controls:"無其他控制項目",unavailable:"無法使用",device:"設備",cleaning:"清掃中",docked:"充電中",returning:"回充中",idle:"待機",paused:"已暫停",error:"錯誤",cool:"冷氣",heat:"暖氣",dry:"除濕",fan_only:"送風",auto:"自動",off:"關閉",click_to_view:"點擊查看完整內容",editor_entity:"實體 (Entity)",editor_entity_required:"* 必填",editor_entity_select:"選擇實體...",editor_layout:"佈局模式 (Layout)",editor_layout_standard:"標準版 (Standard)",editor_layout_mini:"迷你版 (Mini)",editor_layout_bar:"長條型 (Bar)",editor_language:"語言 (Language)",editor_language_auto:"自動 (Auto)",editor_disable_popup:"禁用彈出面板",editor_show_buttons:"主畫面顯示按鈕 (Button Entity IDs)",editor_show_buttons_desc:"輸入 button 實體 ID，用逗號分隔",editor_filters_title:"彈出面板過濾器 (Popup Filters)",editor_filters_desc:"使用逗號分隔多個值，例如: sensor,switch",editor_exclude_domains:"排除的 Domain",editor_include_domains:"僅包含的 Domain",editor_exclude_entities:"排除的實體 ID",editor_include_entities:"僅包含的實體 ID",editor_exclude_sensor_classes:"排除的 Sensor Device Class",editor_include_sensor_classes:"僅包含的 Sensor Device Class",mass_queue_playlist:"播放清單",mass_queue_loading:"載入中…",mass_library:"音樂資料庫",mass_library_loading:"載入中…",mass_search:"搜尋",mass_search_placeholder:"藝人、專輯或曲目…",mass_search_loading:"載入中…",mass_search_button:"搜尋"},"zh-CN":{target_temp:"目标温度",target_humidity:"目标湿度",position:"位置",tilt:"倾斜",open_tilt:"开启倾斜",close_tilt:"关闭倾斜",open:"打开",close:"关闭",stop:"停止",start:"开始",pause:"暂停",return_home:"回充",no_controls:"无其他控制项目",unavailable:"不可用",device:"设备",cleaning:"清扫中",docked:"充电中",returning:"回充中",idle:"待机",paused:"已暂停",error:"错误",cool:"制冷",heat:"制热",dry:"除湿",fan_only:"送风",auto:"自动",off:"关闭",click_to_view:"点击查看完整内容",editor_entity:"实体 (Entity)",editor_entity_required:"* 必填",editor_entity_select:"选择实体...",editor_layout:"布局模式 (Layout)",editor_layout_standard:"标准版 (Standard)",editor_layout_mini:"迷你版 (Mini)",editor_layout_bar:"长条型 (Bar)",editor_language:"语言 (Language)",editor_language_auto:"自动 (Auto)",editor_disable_popup:"禁用弹出面板",editor_show_buttons:"主画面显示按钮 (Button Entity IDs)",editor_show_buttons_desc:"输入 button 实体 ID，用逗号分隔",editor_filters_title:"弹出面板过滤器 (Popup Filters)",editor_filters_desc:"使用逗号分隔多个值，例如: sensor,switch",editor_exclude_domains:"排除的 Domain",editor_include_domains:"仅包含的 Domain",editor_exclude_entities:"排除的实体 ID",editor_include_entities:"仅包含的实体 ID",editor_exclude_sensor_classes:"排除的 Sensor Device Class",editor_include_sensor_classes:"仅包含的 Sensor Device Class",mass_queue_playlist:"播放列表",mass_queue_loading:"加载中…",mass_library:"音乐资料库",mass_library_loading:"加载中…",mass_search:"搜索",mass_search_placeholder:"艺人、专辑或曲目…",mass_search_loading:"加载中…",mass_search_button:"搜索"},en:{target_temp:"Target Temp",target_humidity:"Target Humidity",position:"Position",tilt:"Tilt",open_tilt:"Open Tilt",close_tilt:"Close Tilt",open:"Open",close:"Close",stop:"Stop",start:"Start",pause:"Pause",return_home:"Return",no_controls:"No additional controls",unavailable:"Unavailable",device:"Device",cleaning:"Cleaning",docked:"Docked",returning:"Returning",idle:"Idle",paused:"Paused",error:"Error",cool:"Cool",heat:"Heat",dry:"Dry",fan_only:"Fan",auto:"Auto",off:"Off",click_to_view:"Click to view full text",editor_entity:"Entity",editor_entity_required:"* Required",editor_entity_select:"Select entity...",editor_layout:"Layout",editor_layout_standard:"Standard",editor_layout_mini:"Mini",editor_layout_bar:"Bar",editor_language:"Language",editor_language_auto:"Auto",editor_disable_popup:"Disable Popup",editor_show_buttons:"Show Buttons on Main (Button Entity IDs)",editor_show_buttons_desc:"Enter button entity IDs, comma separated",editor_filters_title:"Popup Filters",editor_filters_desc:"Use comma to separate multiple values, e.g: sensor,switch",editor_exclude_domains:"Exclude Domains",editor_include_domains:"Include Domains Only",editor_exclude_entities:"Exclude Entity IDs",editor_include_entities:"Include Entity IDs Only",editor_exclude_sensor_classes:"Exclude Sensor Classes",editor_include_sensor_classes:"Include Sensor Classes Only",mass_queue_playlist:"Queue",mass_queue_loading:"Loading…",mass_library:"Library",mass_library_loading:"Loading…",mass_search:"Search",mass_search_placeholder:"Artist, album or track…",mass_search_loading:"Loading…",mass_search_button:"Search"},ja:{target_temp:"目標温度",target_humidity:"目標湿度",position:"位置",tilt:"傾斜",open_tilt:"傾斜を開く",close_tilt:"傾斜を閉じる",open:"開く",close:"閉じる",stop:"停止",start:"スタート",pause:"一時停止",return_home:"帰還",no_controls:"他のコントロールなし",unavailable:"利用不可",device:"デバイス",cleaning:"掃除中",docked:"充電中",returning:"帰還中",idle:"待機",paused:"一時停止",error:"エラー",cool:"冷房",heat:"暖房",dry:"除湿",fan_only:"送風",auto:"自動",off:"オフ",click_to_view:"クリックして全文を表示",editor_entity:"エンティティ",editor_entity_required:"* 必須",editor_entity_select:"エンティティを選択...",editor_layout:"レイアウト",editor_layout_standard:"スタンダード",editor_layout_mini:"ミニ",editor_layout_bar:"バー",editor_language:"言語",editor_language_auto:"自動",editor_disable_popup:"ポップアップを無効化",editor_show_buttons:"メイン画面にボタン表示",editor_show_buttons_desc:"ボタンエンティティIDをカンマ区切りで入力",editor_filters_title:"ポップアップフィルター",editor_filters_desc:"カンマで複数の値を区切る",editor_exclude_domains:"除外するドメイン",editor_include_domains:"含めるドメインのみ",editor_exclude_entities:"除外するエンティティID",editor_include_entities:"含めるエンティティIDのみ",editor_exclude_sensor_classes:"除外するセンサークラス",editor_include_sensor_classes:"含めるセンサークラスのみ",mass_queue_playlist:"再生リスト",mass_queue_loading:"読み込み中…",mass_library:"音楽ライブラリ",mass_library_loading:"読み込み中…",mass_search:"検索",mass_search_placeholder:"アーティスト、アルバム、曲…",mass_search_loading:"読み込み中…",mass_search_button:"検索"}},ae=K`
       :host { 
         display: block;
         --accent-color: #03a9f4;
@@ -821,6 +821,26 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
       }
 
       /* Media Player */
+      .media-bg-root {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .media-bg-root-has::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.85)), var(--udc-media-bg-image);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        z-index: 0;
+      }
+      .media-bg-root > * {
+        position: relative;
+        z-index: 1;
+      }
+
       .media-info {
         text-align: center;
         margin: 24px 0;
@@ -989,8 +1009,13 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         padding: 8px 8px 4px;
         align-items: center;
       }
-      .mass-search-input {
+      .mass-search-input-wrap {
         flex: 1;
+        min-width: 0;
+        position: relative;
+      }
+      .mass-search-input {
+        width: 100%;
         min-width: 0;
         padding: 8px 12px;
         border-radius: 8px;
@@ -998,6 +1023,35 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         background: rgba(var(--rgb-primary-text-color), 0.05);
         color: var(--primary-text-color);
         font-size: 0.9rem;
+      }
+      .mass-search-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        border-radius: 8px;
+        background: var(--card-background-color, var(--ha-card-background));
+        border: 1px solid rgba(var(--rgb-primary-text-color), 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10;
+      }
+      .mass-search-suggestion-item {
+        display: block;
+        width: 100%;
+        padding: 8px 12px;
+        border: none;
+        background: transparent;
+        color: var(--primary-text-color);
+        font-size: 0.9rem;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .mass-search-suggestion-item:hover {
+        background: rgba(var(--rgb-primary-text-color), 0.08);
       }
       .mass-search-input::placeholder {
         color: var(--text-secondary);
@@ -1016,6 +1070,36 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
       .mass-search-btn:disabled {
         opacity: 0.6;
         cursor: not-allowed;
+      }
+
+      .mass-search-spinner {
+        box-sizing: border-box;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid rgba(var(--rgb-primary-text-color), 0.3);
+        border-top-color: var(--primary-color);
+        animation: mass-search-spin 0.7s linear infinite;
+      }
+
+      .mass-search-spinner-inline {
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+
+      .mass-search-spinner-center {
+        display: block;
+        margin: 6px auto 4px;
+      }
+
+      @keyframes mass-search-spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
 
       /* Music Assistant 資料庫列 (Library) */
@@ -1043,6 +1127,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         padding: 2px 2px 6px;
         scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
+        cursor: grab;
       }
       .mass-library-row-scroll::-webkit-scrollbar {
         display: none;
@@ -1577,7 +1662,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         text-decoration-color: var(--accent-color);
       }
 
-`,ne=K`
+`,se=K`
       /* Popup Styles */
       .popup-overlay {
         position: fixed !important; 
@@ -1981,13 +2066,13 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
       .header-action:active {
         animation: bounce 0.3s;
       }
-`;function se(e){return{switch:"mdi:toggle-switch",light:"mdi:lightbulb",fan:"mdi:fan",sensor:"mdi:eye",binary_sensor:"mdi:checkbox-marked-circle",select:"mdi:format-list-bulleted",number:"mdi:counter",button:"mdi:gesture-tap",climate:"mdi:thermostat",cover:"mdi:window-shutter",lock:"mdi:lock",humidifier:"mdi:air-humidifier",media_player:"mdi:play-circle",vacuum:"mdi:robot-vacuum",water_heater:"mdi:water-thermometer"}[e]||"mdi:circle-outline"}function re(e){return{cool:"mdi:snowflake",heat:"mdi:fire",dry:"mdi:water-percent",fan_only:"mdi:fan",auto:"mdi:brightness-auto",off:"mdi:power"}[e]}function oe(e){return{auto:"自動",low:"低速",medium:"中速",high:"高速",middle:"中速",favorite:"最愛",silent:"靜音",turbo:"強力"}[e]||e}const ce={climate:{cool:"rgba(3, 169, 244, 0.2)",heat:"rgba(255, 152, 0, 0.2)",dry:"rgba(156, 39, 176, 0.15)",fan_only:"rgba(76, 175, 80, 0.15)",auto:"rgba(0, 150, 136, 0.15)",off:"rgba(158, 158, 158, 0.1)"},light:{on:"rgba(255, 193, 7, 0.2)",off:"rgba(158, 158, 158, 0.1)"},fan:{on:"rgba(76, 175, 80, 0.2)",off:"rgba(158, 158, 158, 0.1)"},cover:{open:"rgba(3, 169, 244, 0.15)",opening:"rgba(3, 169, 244, 0.15)",closed:"rgba(158, 158, 158, 0.1)",closing:"rgba(158, 158, 158, 0.1)"},humidifier:{on:"rgba(33, 150, 243, 0.2)",off:"rgba(158, 158, 158, 0.1)"},media_player:{playing:"rgba(156, 39, 176, 0.2)",paused:"rgba(255, 152, 0, 0.15)",off:"rgba(158, 158, 158, 0.1)"},vacuum:{cleaning:"rgba(76, 175, 80, 0.2)",docked:"rgba(158, 158, 158, 0.1)",returning:"rgba(255, 152, 0, 0.15)"},water_heater:{electric:"rgba(255, 152, 0, 0.2)",gas:"rgba(255, 87, 34, 0.2)",off:"rgba(158, 158, 158, 0.1)"}};function le(e,t){return ce[e]?.[t]||"var(--ha-card-background)"}const de={climate:function(e,t,i="standard",a=!0){const{current_temperature:n,temperature:s,fan_mode:r,fan_modes:o}=t.attributes,c=t.state,l="mini"===i;return"bar"===i?N`
+`;function ne(e){return{switch:"mdi:toggle-switch",light:"mdi:lightbulb",fan:"mdi:fan",sensor:"mdi:eye",binary_sensor:"mdi:checkbox-marked-circle",select:"mdi:format-list-bulleted",number:"mdi:counter",button:"mdi:gesture-tap",climate:"mdi:thermostat",cover:"mdi:window-shutter",lock:"mdi:lock",humidifier:"mdi:air-humidifier",media_player:"mdi:play-circle",vacuum:"mdi:robot-vacuum",water_heater:"mdi:water-thermometer"}[e]||"mdi:circle-outline"}function re(e){return{cool:"mdi:snowflake",heat:"mdi:fire",dry:"mdi:water-percent",fan_only:"mdi:fan",auto:"mdi:brightness-auto",off:"mdi:power"}[e]}function oe(e){return{auto:"自動",low:"低速",medium:"中速",high:"高速",middle:"中速",favorite:"最愛",silent:"靜音",turbo:"強力"}[e]||e}const ce={climate:{cool:"rgba(3, 169, 244, 0.2)",heat:"rgba(255, 152, 0, 0.2)",dry:"rgba(156, 39, 176, 0.15)",fan_only:"rgba(76, 175, 80, 0.15)",auto:"rgba(0, 150, 136, 0.15)",off:"rgba(158, 158, 158, 0.1)"},light:{on:"rgba(255, 193, 7, 0.2)",off:"rgba(158, 158, 158, 0.1)"},fan:{on:"rgba(76, 175, 80, 0.2)",off:"rgba(158, 158, 158, 0.1)"},cover:{open:"rgba(3, 169, 244, 0.15)",opening:"rgba(3, 169, 244, 0.15)",closed:"rgba(158, 158, 158, 0.1)",closing:"rgba(158, 158, 158, 0.1)"},humidifier:{on:"rgba(33, 150, 243, 0.2)",off:"rgba(158, 158, 158, 0.1)"},media_player:{playing:"rgba(156, 39, 176, 0.2)",paused:"rgba(255, 152, 0, 0.15)",off:"rgba(158, 158, 158, 0.1)"},vacuum:{cleaning:"rgba(76, 175, 80, 0.2)",docked:"rgba(158, 158, 158, 0.1)",returning:"rgba(255, 152, 0, 0.15)"},water_heater:{electric:"rgba(255, 152, 0, 0.2)",gas:"rgba(255, 87, 34, 0.2)",off:"rgba(158, 158, 158, 0.1)"}};function le(e,t){return ce[e]?.[t]||"var(--ha-card-background)"}const de={climate:function(e,t,i="standard",a=!0){const{current_temperature:s,temperature:n,fan_mode:r,fan_modes:o}=t.attributes,c=t.state,l="mini"===i;return"bar"===i?N`
         <div class="bar-content">
           <div class="bar-left">
             ${e._renderBarIcon(t,"")}
             <div class="bar-info">
               <div class="bar-name">${e._renderTitle(t.attributes.friendly_name,i)}</div>
-              <div class="bar-state">${n}°C → ${s}°C</div>
+              <div class="bar-state">${s}°C → ${n}°C</div>
             </div>
           </div>
           <div class="bar-right">
@@ -2044,7 +2129,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         ${e._renderHeaderIcon(t,l)}
         <div class="device-name ${l?"device-name-mini":""}">
           ${e._renderTitle(t.attributes.friendly_name||e._t("device"),i)}
-          <span class="device-value">${n}°C → ${s}°C</span>
+          <span class="device-value">${s}°C → ${n}°C</span>
         </div>
         ${e._renderHeaderAction(a)}
       </div>
@@ -2055,7 +2140,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         </button>
         <div class="target-display">
           <span class="label">${e._t("target_temp")}</span>
-          <span class="value ${l?"value-mini":""}">${s}°C</span>
+          <span class="value ${l?"value-mini":""}">${n}°C</span>
         </div>
         <button class="adj-btn ${l?"adj-btn-mini":""}" @click="${()=>e._adjustTemp(.5)}">
           <ha-icon icon="mdi:plus"></ha-icon>
@@ -2093,24 +2178,24 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
       `:""}
       
       ${e._renderMainButtons(i)}
-    `},light:function(e,t,i="standard",a=!0){const n="on"===t.state,s=t.attributes.brightness||0,r=Math.round(s/255*100),o="bar"===i,c="mini"===i,l=void 0!==t.attributes.brightness;return o?N`
+    `},light:function(e,t,i="standard",a=!0){const s="on"===t.state,n=t.attributes.brightness||0,r=Math.round(n/255*100),o="bar"===i,c="mini"===i,l=void 0!==t.attributes.brightness;return o?N`
         <div class="bar-content">
           <div class="bar-left">
-            ${e._renderBarIcon(t,n?"bar-icon-on":"")}
+            ${e._renderBarIcon(t,s?"bar-icon-on":"")}
             <div class="bar-info">
               <div class="bar-name">${e._renderTitle(t.attributes.friendly_name,i)}</div>
-              ${n&&l?N`
+              ${s&&l?N`
                 <div class="bar-slider-container" @click="${t=>{t.stopPropagation(),e._handleSliderClick(t,"light")}}">
                   <div class="bar-slider-bg bar-slider-light" style="--slider-value: ${r}%"></div>
                   <div class="bar-slider-text">${r}%</div>
                 </div>
               `:N`
-                <div class="bar-state">${n?e._t("on"):e._t("off")}</div>
+                <div class="bar-state">${s?e._t("on"):e._t("off")}</div>
               `}
             </div>
           </div>
           <div class="bar-right">
-            ${n&&l?N`
+            ${s&&l?N`
               <div class="bar-controls">
                 <button class="bar-btn" @click="${()=>e._adjustBrightness(-10)}">
                   <ha-icon icon="mdi:minus"></ha-icon>
@@ -2121,7 +2206,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
               </div>
             `:""}
             <div class="bar-controls">
-              <button class="bar-toggle ${n?"bar-toggle-on":""}" @click="${()=>e._toggleEntity()}">
+              <button class="bar-toggle ${s?"bar-toggle-on":""}" @click="${()=>e._toggleEntity()}">
                 <ha-icon icon="mdi:power"></ha-icon>
               </button>
             </div>
@@ -2134,20 +2219,20 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         ${e._renderHeaderIcon(t,c)}
         <div class="device-name ${c?"device-name-mini":""}">
           ${e._renderTitle(t.attributes.friendly_name||e._t("device"),i)}
-          <span class="device-value">${n&&l?`${r}%`:n?e._t("on"):e._t("off")}</span>
+          <span class="device-value">${s&&l?`${r}%`:s?e._t("on"):e._t("off")}</span>
         </div>
         ${e._renderHeaderAction(a)}
       </div>
 
       <div class="main-control ${c?"main-control-mini":""}">
-        <button class="power-btn ${n?"on":""} ${c?"power-btn-mini":""}" 
+        <button class="power-btn ${s?"on":""} ${c?"power-btn-mini":""}" 
                 @click="${()=>e._toggleEntity()}">
-          <ha-icon icon="mdi:lightbulb${n?"":"-outline"}"></ha-icon>
-          ${c?"":N`<span class="mode-label">${n?e._t("on"):e._t("off")}</span>`}
+          <ha-icon icon="mdi:lightbulb${s?"":"-outline"}"></ha-icon>
+          ${c?"":N`<span class="mode-label">${s?e._t("on"):e._t("off")}</span>`}
         </button>
       </div>
 
-      ${n&&l?N`
+      ${s&&l?N`
         <div class="temp-control ${c?"temp-control-mini":""}">
           <button class="adj-btn ${c?"adj-btn-mini":""}" @click="${()=>e._adjustBrightness(-10)}">
             <ha-icon icon="mdi:minus"></ha-icon>
@@ -2163,17 +2248,17 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
       `:""}
       
       ${e._renderMainButtons(i)}
-    `},fan:function(e,t,i="standard",a=!0){const n="on"===t.state,s=t.attributes.percentage||0,r=t.attributes.preset_modes||[],o=t.attributes.preset_mode,c="mini"===i;return"bar"===i?N`
+    `},fan:function(e,t,i="standard",a=!0){const s="on"===t.state,n=t.attributes.percentage||0,r=t.attributes.preset_modes||[],o=t.attributes.preset_mode,c="mini"===i;return"bar"===i?N`
         <div class="bar-content">
           <div class="bar-left">
-            ${e._renderBarIcon(t,n?"bar-icon-on":"")}
+            ${e._renderBarIcon(t,s?"bar-icon-on":"")}
             <div class="bar-info">
               <div class="bar-name">${e._renderTitle(t.attributes.friendly_name,i)}</div>
-              <div class="bar-state">${n?`${s}%`:e._t("off")}</div>
+              <div class="bar-state">${s?`${n}%`:e._t("off")}</div>
             </div>
           </div>
           <div class="bar-right">
-            ${n&&void 0!==s?N`
+            ${s&&void 0!==n?N`
               <div class="bar-controls">
                 <button class="bar-btn" @click="${()=>e._adjustFanSpeed(-10)}">
                   <ha-icon icon="mdi:minus"></ha-icon>
@@ -2184,7 +2269,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
               </div>
             `:""}
             <div class="bar-controls">
-              <button class="bar-toggle ${n?"bar-toggle-on":""}" @click="${()=>e._toggleEntity()}">
+              <button class="bar-toggle ${s?"bar-toggle-on":""}" @click="${()=>e._toggleEntity()}">
                 <ha-icon icon="mdi:power"></ha-icon>
               </button>
             </div>
@@ -2215,26 +2300,26 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         ${e._renderHeaderIcon(t,c)}
         <div class="device-name ${c?"device-name-mini":""}">
           ${e._renderTitle(t.attributes.friendly_name||e._t("device"),i)}
-          <span class="device-value">${n?`${s}%`:e._t("off")}</span>
+          <span class="device-value">${s?`${n}%`:e._t("off")}</span>
         </div>
         ${e._renderHeaderAction(a)}
       </div>
 
       <div class="main-control ${c?"main-control-mini":""}">
-        <button class="power-btn ${n?"on":""} ${c?"power-btn-mini":""}" @click="${()=>e._toggleEntity()}">
+        <button class="power-btn ${s?"on":""} ${c?"power-btn-mini":""}" @click="${()=>e._toggleEntity()}">
           <ha-icon icon="mdi:fan"></ha-icon>
-          ${c?"":N`<span class="mode-label">${n?e._t("on"):e._t("off")}</span>`}
+          ${c?"":N`<span class="mode-label">${s?e._t("on"):e._t("off")}</span>`}
         </button>
       </div>
 
-      ${n?N`
+      ${s?N`
         <div class="temp-control ${c?"temp-control-mini":""}">
           <button class="adj-btn ${c?"adj-btn-mini":""}" @click="${()=>e._adjustFanSpeed(-10)}">
             <ha-icon icon="mdi:minus"></ha-icon>
           </button>
           <div class="target-display">
             <span class="label">風速</span>
-            <span class="value ${c?"value-mini":""}">${s}%</span>
+            <span class="value ${c?"value-mini":""}">${n}%</span>
           </div>
           <button class="adj-btn ${c?"adj-btn-mini":""}" @click="${()=>e._adjustFanSpeed(10)}">
             <ha-icon icon="mdi:plus"></ha-icon>
@@ -2242,13 +2327,13 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         </div>
       `:""}
       ${e._renderMainButtons(i)}
-    `},cover:function(e,t,i="standard",a=!0){const n=t.attributes.current_position||0,s=t.attributes.current_tilt_position??0,r=t.state,o=t.attributes.supported_features??0,c=!!(48&o),l=!!(128&o)&&void 0!==t.attributes.current_tilt_position,d="mini"===i;return"bar"===i?N`
+    `},cover:function(e,t,i="standard",a=!0){const s=t.attributes.current_position||0,n=t.attributes.current_tilt_position??0,r=t.state,o=t.attributes.supported_features??0,c=!!(48&o),l=!!(128&o)&&void 0!==t.attributes.current_tilt_position,d="mini"===i;return"bar"===i?N`
         <div class="bar-content">
           <div class="bar-left">
             ${e._renderBarIcon(t,"")}
             <div class="bar-info">
               <div class="bar-name">${e._renderTitle(t.attributes.friendly_name,i)}</div>
-              <div class="bar-state">${n}%${l?` / ${s}%`:""}</div>
+              <div class="bar-state">${s}%${l?` / ${n}%`:""}</div>
             </div>
           </div>
           <div class="bar-right">
@@ -2319,7 +2404,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         ${e._renderHeaderIcon(t,d)}
         <div class="device-name ${d?"device-name-mini":""}">
           ${e._renderTitle(t.attributes.friendly_name||e._t("device"),i)}
-          ${void 0!==t.attributes.current_position?N`<span class="device-value">${n}%${l?` / ${s}%`:""}</span>`:""}
+          ${void 0!==t.attributes.current_position?N`<span class="device-value">${s}%${l?` / ${n}%`:""}</span>`:""}
         </div>
         ${e._renderHeaderAction(a)}
       </div>
@@ -2356,7 +2441,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
           </button>
           <div class="target-display">
             <span class="label">${e._t("position")}</span>
-            <span class="value ${d?"value-mini":""}">${n}%</span>
+            <span class="value ${d?"value-mini":""}">${s}%</span>
           </div>
           <button class="adj-btn ${d?"adj-btn-mini":""}" @click="${()=>e._adjustCoverPosition(10)}">
             <ha-icon icon="mdi:plus"></ha-icon>
@@ -2370,7 +2455,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
           </button>
           <div class="target-display">
             <span class="label">${e._t("tilt")}</span>
-            <span class="value ${d?"value-mini":""}">${s}%</span>
+            <span class="value ${d?"value-mini":""}">${n}%</span>
           </div>
           <button class="adj-btn ${d?"adj-btn-mini":""}" @click="${()=>e._adjustCoverTiltPosition(10)}">
             <ha-icon icon="mdi:plus"></ha-icon>
@@ -2378,18 +2463,18 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         </div>
       `:""}
       ${e._renderMainButtons(i)}
-    `},humidifier:function(e,t,i="standard",a=!0){const n="on"===t.state,s=t.attributes.humidity||0,r="mini"===i;return"bar"===i?N`
+    `},humidifier:function(e,t,i="standard",a=!0){const s="on"===t.state,n=t.attributes.humidity||0,r="mini"===i;return"bar"===i?N`
         <div class="bar-content">
           <div class="bar-left">
-            ${e._renderBarIcon(t,n?"bar-icon-on":"")}
+            ${e._renderBarIcon(t,s?"bar-icon-on":"")}
             <div class="bar-info">
               <div class="bar-name">${e._renderTitle(t.attributes.friendly_name,i)}</div>
-              <div class="bar-state">${n?`${s}%`:e._t("off")}</div>
+              <div class="bar-state">${s?`${n}%`:e._t("off")}</div>
             </div>
           </div>
           <div class="bar-right">
             <div class="bar-controls">
-              <button class="bar-toggle ${n?"bar-toggle-on":""}" @click="${()=>e._toggleEntity()}">
+              <button class="bar-toggle ${s?"bar-toggle-on":""}" @click="${()=>e._toggleEntity()}">
                 <ha-icon icon="mdi:power"></ha-icon>
               </button>
             </div>
@@ -2406,36 +2491,37 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         ${e._renderHeaderIcon(t,r)}
         <div class="device-name ${r?"device-name-mini":""}">
           ${e._renderTitle(t.attributes.friendly_name||e._t("device"),i)}
-          <span class="device-value">${n?`${s}%`:e._t("off")}</span>
+          <span class="device-value">${s?`${n}%`:e._t("off")}</span>
         </div>
         ${e._renderHeaderAction(a)}
       </div>
 
       <div class="main-control ${r?"main-control-mini":""}">
-        <button class="power-btn ${n?"on":""} ${r?"power-btn-mini":""}" @click="${()=>e._toggleEntity()}">
+        <button class="power-btn ${s?"on":""} ${r?"power-btn-mini":""}" @click="${()=>e._toggleEntity()}">
           <ha-icon icon="mdi:air-humidifier"></ha-icon>
-          ${r?"":N`<span class="mode-label">${n?e._t("on"):e._t("off")}</span>`}
+          ${r?"":N`<span class="mode-label">${s?e._t("on"):e._t("off")}</span>`}
         </button>
       </div>
 
-      ${n?N`
+      ${s?N`
         <div class="temp-control ${r?"temp-control-mini":""}">
           <div style="width: 64px;"></div>
           <div class="target-display">
             <span class="label">${e._t("target_humidity")}</span>
-            <span class="value ${r?"value-mini":""}">${s}%</span>
+            <span class="value ${r?"value-mini":""}">${n}%</span>
           </div>
           <div style="width: 64px;"></div>
         </div>
       `:""}
       ${e._renderMainButtons(i)}
-    `},media_player:function(e,t,i="standard",a=!0){const n=t.state,s=t.attributes.media_title||"No Media",r=t.attributes.media_artist||"",o="bar"===i,c="mini"===i,l={artist:[],album:[],playlist:[],track:[]};if(Array.isArray(e._massLibraryItems)&&e._massLibraryItems.forEach(e=>{const t=e.media_type;l[t]&&l[t].push(e)}),o){const r=void 0!==t.attributes.volume_level?Math.round(100*t.attributes.volume_level):0,o=e._showMassPlaylistOrLibrary(t);return N`
+    `},media_player:function(e,t,i="standard",a=!0){const s=t.state,n=t.attributes||{},r=n.media_title||"No Media",o=n.media_artist||"",c="bar"===i,l="mini"===i,d=n.entity_picture_local||n.entity_picture||n.media_image||n.media_image_url||null,p=d?`--udc-media-bg-image: url("${d}")`:"",u={artist:[],album:[],playlist:[],track:[]};if(Array.isArray(e._massLibraryItems)&&e._massLibraryItems.forEach(e=>{const t=e.media_type;u[t]&&u[t].push(e)}),c){const n=void 0!==t.attributes.volume_level?Math.round(100*t.attributes.volume_level):0,o=e._showMassPlaylistOrLibrary(t);return N`
+        <div class="media-bg-root ${d?"media-bg-root-has":""}" style="${p}">
         <div class="bar-content">
           <div class="bar-left">
-            ${e._renderBarIcon(t,"playing"===n?"bar-icon-on":"")}
+            ${e._renderBarIcon(t,"playing"===s?"bar-icon-on":"")}
             <div class="bar-info">
               <div class="bar-name">${e._renderTitle(t.attributes.friendly_name,i,15)}</div>
-              <div class="bar-state">${e._renderTitle(s,i,25)}</div>
+              <div class="bar-state">${e._renderTitle(r,i,25)}</div>
             </div>
           </div>
           <div class="bar-right">
@@ -2444,7 +2530,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
                 <button class="bar-btn" @click="${()=>e._adjustVolume(-5)}">
                   <ha-icon icon="mdi:minus"></ha-icon>
                 </button>
-                <span class="bar-value">${r}%</span>
+                <span class="bar-value">${n}%</span>
                 <button class="bar-btn" @click="${()=>e._adjustVolume(5)}">
                   <ha-icon icon="mdi:plus"></ha-icon>
                 </button>
@@ -2462,9 +2548,9 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
           <div class="bar-mode-chip" @click="${()=>e._callService("media_player","media_previous_track")}">
             <ha-icon icon="mdi:skip-previous"></ha-icon>
           </div>
-          <div class="bar-mode-chip ${"playing"===n?"active":""}"
-               @click="${()=>e._callService("media_player","playing"===n?"media_pause":"media_play")}">
-            <ha-icon icon="mdi:${"playing"===n?"pause":"play"}"></ha-icon>
+          <div class="bar-mode-chip ${"playing"===s?"active":""}"
+               @click="${()=>e._callService("media_player","playing"===s?"media_pause":"media_play")}">
+            <ha-icon icon="mdi:${"playing"===s?"pause":"play"}"></ha-icon>
           </div>
           <div class="bar-mode-chip" @click="${()=>e._callService("media_player","media_next_track")}">
             <ha-icon icon="mdi:skip-next"></ha-icon>
@@ -2515,20 +2601,20 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         ${e._isMusicAssistant(t)&&e._hasMusicAssistantLibrary()&&e._massLibraryExpanded?N`
           <div class="mass-queue-foldable">
             <div class="mass-library-section">
-              ${e._massLibraryLoading&&0===e._massLibraryItems.length?N`<div class="mass-queue-empty">${e._t("mass_library_loading")}</div>`:0===e._massLibraryItems.length?N`<div class="mass-queue-empty">—</div>`:["artist","album","playlist","track"].map(t=>{const i=l[t]||[];return i.length?N`
+              ${e._massLibraryLoading&&0===e._massLibraryItems.length?N`<div class="mass-queue-empty">${e._t("mass_library_loading")}</div>`:0===e._massLibraryItems.length?N`<div class="mass-queue-empty">—</div>`:["artist","album","playlist","track"].map(t=>{const i=u[t]||[];return i.length?N`
                         <div class="mass-library-row">
                           <div class="mass-library-row-title">${t.toUpperCase()}</div>
-                          <div class="mass-library-row-scroll">
-                            ${i.map(t=>{const i=t.image||t.album?.image,a=t.artists?.map(e=>e.name).filter(Boolean).join(", ")||"",n=t.album?.name||"";return N`
+                          <div class="mass-library-row-scroll" @mousedown="${t=>e._onMassScrollDragStart(t)}">
+                            ${i.map(t=>{const i=t.image||t.album?.image,a=t.artists?.map(e=>e.name).filter(Boolean).join(", ")||"",s=t.album?.name||"";return N`
                                 <button class="mass-library-chip" @click="${()=>e._playMassLibraryItem(t)}">
                                   <div class="mass-library-chip-image">
                                     ${i?N`<img src="${i}" alt="" />`:N`<ha-icon icon="mdi:music"></ha-icon>`}
                                   </div>
                                   <div class="mass-library-chip-text">
                                     <span class="mass-library-chip-title">${t.name||"—"}</span>
-                                    ${a||n?N`
+                                    ${a||s?N`
                                       <span class="mass-library-chip-sub">
-                                        ${a||n}
+                                        ${a||s}
                                       </span>
                                     `:""}
                                   </div>
@@ -2544,27 +2630,42 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         ${e._isMusicAssistant(t)&&e._hasMusicAssistantSearch()&&e._massSearchExpanded?N`
           <div class="mass-queue-foldable">
             <div class="mass-search-input-row">
-              <input type="text" class="mass-search-input" .value="${e._massSearchQuery||""}"
-                     @input="${t=>e._onMassSearchInput(t)}" @keydown="${t=>"Enter"===t.key&&e._runMassSearch()}"
-                     placeholder="${e._t("mass_search_placeholder")}" />
+              <div class="mass-search-input-wrap">
+                <input type="text" class="mass-search-input" .value="${e._massSearchQuery||""}"
+                       @input="${t=>e._onMassSearchInput(t)}"
+                       @focus="${()=>e._openSearchSuggestions()}"
+                       @blur="${()=>setTimeout(()=>e._closeSearchSuggestions(),150)}"
+                       @keydown="${t=>{"Enter"===t.key&&e._runMassSearch()}}"
+                       placeholder="${e._t("mass_search_placeholder")}" />
+                ${e._massSearchSuggestionsOpen&&e._getFilteredSearchHistory().length?N`
+                  <div class="mass-search-suggestions">
+                    ${e._getFilteredSearchHistory().map(t=>N`
+                      <button type="button" class="mass-search-suggestion-item"
+                              @mousedown="${i=>{i.preventDefault(),e._selectSearchHistoryItem(t)}}">
+                        ${t}
+                      </button>
+                    `)}
+                  </div>
+                `:""}
+              </div>
               <button class="mass-search-btn" @click="${()=>e._runMassSearch()}" ?disabled="${e._massSearchLoading}">
                 ${e._massSearchLoading?e._t("mass_search_loading"):e._t("mass_search_button")}
               </button>
             </div>
             <div class="mass-library-section">
-              ${!e._massSearchLoading||e._massSearchResults?.artists?.length||e._massSearchResults?.albums?.length||e._massSearchResults?.tracks?.length?["artists","albums","tracks"].map(t=>{const i="artists"===t?"artist":"albums"===t?"album":"track",a=e._massSearchResults?.[t]??[];return a.length?N`
+              ${!e._massSearchLoading||e._massSearchResults?.artists?.length||e._massSearchResults?.albums?.length||e._massSearchResults?.tracks?.length||e._massSearchResults?.playlists?.length||e._massSearchResults?.podcasts?.length?["artists","albums","tracks","playlists","podcasts"].map(t=>{const i="artists"===t?"artist":"albums"===t?"album":"tracks"===t?"track":"playlists"===t?"playlist":"podcast",a=e._massSearchResults?.[t]??[];return a.length?N`
                       <div class="mass-library-row">
                         <div class="mass-library-row-title">${i.toUpperCase()}</div>
-                        <div class="mass-library-row-scroll">
-                          ${a.map(t=>{const i=t.image||t.album?.image,a=t.artists?.map(e=>e.name).filter(Boolean).join(", ")||"",n=t.album?.name||"";return N`
+                        <div class="mass-library-row-scroll" @mousedown="${t=>e._onMassScrollDragStart(t)}">
+                          ${a.map(t=>{const i=t.image||t.album?.image,a=t.artists?.map(e=>e.name).filter(Boolean).join(", ")||"",s=t.album?.name||"";return N`
                               <button class="mass-library-chip" @click="${()=>e._playMassLibraryItem(t)}">
                                 <div class="mass-library-chip-image">
                                   ${i?N`<img src="${i}" alt="" />`:N`<ha-icon icon="mdi:music"></ha-icon>`}
                                 </div>
                                 <div class="mass-library-chip-text">
                                   <span class="mass-library-chip-title">${t.name||"—"}</span>
-                                  ${a||n?N`
-                                    <span class="mass-library-chip-sub">${a||n}</span>
+                                  ${a||s?N`
+                                    <span class="mass-library-chip-sub">${a||s}</span>
                                   `:""}
                                 </div>
                               </button>
@@ -2577,24 +2678,27 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         `:""}
 
         ${e._renderMainButtons(i)}
-      `}const d=void 0!==t.attributes.volume_level?Math.round(100*t.attributes.volume_level):0,p=e._showMassPlaylistOrLibrary(t);return N`
-      <div class="header ${c?"header-mini":""}">
-        ${e._renderHeaderIcon(t,c)}
-        <div class="device-name ${c?"device-name-mini":""}">
-          ${e._renderTitle(t.attributes.friendly_name||e._t("device"),i)}
-          ${N`<span class="device-value">${e._renderTitle(s,i,28)}</span>`}
         </div>
-        ${p&&e._hasMassQueue()?N`
+        </div>
+      `}const h=void 0!==t.attributes.volume_level?Math.round(100*t.attributes.volume_level):0,m=e._showMassPlaylistOrLibrary(t);return N`
+      <div class="media-bg-root ${d?"media-bg-root-has":""}" style="${p}">
+      <div class="header ${l?"header-mini":""}">
+        ${e._renderHeaderIcon(t,l)}
+        <div class="device-name ${l?"device-name-mini":""}">
+          ${e._renderTitle(t.attributes.friendly_name||e._t("device"),i)}
+          ${N`<span class="device-value">${e._renderTitle(r,i,28)}</span>`}
+        </div>
+        ${m&&e._hasMassQueue()?N`
           <button class="header-action" @click="${()=>e._toggleMassQueueExpand()}">
             <ha-icon icon="mdi:playlist-music"></ha-icon>
           </button>
         `:""}
-        ${p&&e._hasMusicAssistantLibrary()?N`
+        ${m&&e._hasMusicAssistantLibrary()?N`
           <button class="header-action" @click="${()=>e._toggleMassLibraryExpand()}">
             <ha-icon icon="mdi:music-box-multiple"></ha-icon>
           </button>
         `:""}
-        ${p&&e._hasMusicAssistantSearch()?N`
+        ${m&&e._hasMusicAssistantSearch()?N`
           <button class="header-action" @click="${()=>e._toggleMassSearchExpand()}">
             <ha-icon icon="mdi:magnify"></ha-icon>
           </button>
@@ -2602,33 +2706,33 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         ${e._renderHeaderAction(a)}
       </div>
 
-      <div class="media-info ${c?"media-info-mini":""}">
-        <div class="media-title ${c?"media-title-mini":""}">${e._renderTitle(s,i,30)}</div>
-        ${r&&!c?N`<div class="media-artist">${e._renderTitle(r,i,30)}</div>`:""}
+      <div class="media-info ${l?"media-info-mini":""}">
+        <div class="media-title ${l?"media-title-mini":""}">${e._renderTitle(r,i,30)}</div>
+        ${o&&!l?N`<div class="media-artist">${e._renderTitle(o,i,30)}</div>`:""}
       </div>
 
-      <div class="media-controls ${c?"media-controls-mini":""}">
-        <button class="media-btn ${c?"media-btn-mini":""}" @click="${()=>e._callService("media_player","media_previous_track")}">
+      <div class="media-controls ${l?"media-controls-mini":""}">
+        <button class="media-btn ${l?"media-btn-mini":""}" @click="${()=>e._callService("media_player","media_previous_track")}">
           <ha-icon icon="mdi:skip-previous"></ha-icon>
         </button>
-        <button class="media-btn primary ${c?"media-btn-mini":""}" @click="${()=>e._callService("media_player","playing"===n?"media_pause":"media_play")}">
-          <ha-icon icon="mdi:${"playing"===n?"pause":"play"}"></ha-icon>
+        <button class="media-btn primary ${l?"media-btn-mini":""}" @click="${()=>e._callService("media_player","playing"===s?"media_pause":"media_play")}">
+          <ha-icon icon="mdi:${"playing"===s?"pause":"play"}"></ha-icon>
         </button>
-        <button class="media-btn ${c?"media-btn-mini":""}" @click="${()=>e._callService("media_player","media_next_track")}">
+        <button class="media-btn ${l?"media-btn-mini":""}" @click="${()=>e._callService("media_player","media_next_track")}">
           <ha-icon icon="mdi:skip-next"></ha-icon>
         </button>
       </div>
 
       ${void 0!==t.attributes.volume_level?N`
-        <div class="temp-control ${c?"temp-control-mini":""}">
-          <button class="adj-btn ${c?"adj-btn-mini":""}" @click="${()=>e._adjustVolume(-5)}">
+        <div class="temp-control ${l?"temp-control-mini":""}">
+          <button class="adj-btn ${l?"adj-btn-mini":""}" @click="${()=>e._adjustVolume(-5)}">
             <ha-icon icon="mdi:minus"></ha-icon>
           </button>
           <div class="target-display">
             <span class="label">音量</span>
-            <span class="value ${c?"value-mini":""}">${d}%</span>
+            <span class="value ${l?"value-mini":""}">${h}%</span>
           </div>
-          <button class="adj-btn ${c?"adj-btn-mini":""}" @click="${()=>e._adjustVolume(5)}">
+          <button class="adj-btn ${l?"adj-btn-mini":""}" @click="${()=>e._adjustVolume(5)}">
             <ha-icon icon="mdi:plus"></ha-icon>
           </button>
         </div>
@@ -2657,20 +2761,20 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
       ${e._isMusicAssistant(t)&&e._hasMusicAssistantLibrary()&&e._massLibraryExpanded?N`
         <div class="mass-queue-foldable">
           <div class="mass-library-section">
-            ${e._massLibraryLoading&&0===e._massLibraryItems.length?N`<div class="mass-queue-empty">${e._t("mass_library_loading")}</div>`:0===e._massLibraryItems.length?N`<div class="mass-queue-empty">—</div>`:["artist","album","playlist","track"].map(t=>{const i=l[t]||[];return i.length?N`
+            ${e._massLibraryLoading&&0===e._massLibraryItems.length?N`<div class="mass-queue-empty">${e._t("mass_library_loading")}</div>`:0===e._massLibraryItems.length?N`<div class="mass-queue-empty">—</div>`:["artist","album","playlist","track"].map(t=>{const i=u[t]||[];return i.length?N`
                       <div class="mass-library-row">
                         <div class="mass-library-row-title">${t.toUpperCase()}</div>
-                        <div class="mass-library-row-scroll">
-                          ${i.map(t=>{const i=t.image||t.album?.image,a=t.artists?.map(e=>e.name).filter(Boolean).join(", ")||"",n=t.album?.name||"";return N`
+                        <div class="mass-library-row-scroll" @mousedown="${t=>e._onMassScrollDragStart(t)}">
+                          ${i.map(t=>{const i=t.image||t.album?.image,a=t.artists?.map(e=>e.name).filter(Boolean).join(", ")||"",s=t.album?.name||"";return N`
                               <button class="mass-library-chip" @click="${()=>e._playMassLibraryItem(t)}">
                                 <div class="mass-library-chip-image">
                                   ${i?N`<img src="${i}" alt="" />`:N`<ha-icon icon="mdi:music"></ha-icon>`}
                                 </div>
                                 <div class="mass-library-chip-text">
                                   <span class="mass-library-chip-title">${t.name||"—"}</span>
-                                  ${a||n?N`
+                                  ${a||s?N`
                                     <span class="mass-library-chip-sub">
-                                      ${a||n}
+                                      ${a||s}
                                     </span>
                                   `:""}
                                 </div>
@@ -2686,46 +2790,70 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
       ${e._isMusicAssistant(t)&&e._hasMusicAssistantSearch()&&e._massSearchExpanded?N`
         <div class="mass-queue-foldable">
           <div class="mass-search-input-row">
-            <input type="text" class="mass-search-input" .value="${e._massSearchQuery||""}"
-                   @input="${t=>e._onMassSearchInput(t)}" @keydown="${t=>"Enter"===t.key&&e._runMassSearch()}"
-                   placeholder="${e._t("mass_search_placeholder")}" />
+            <div class="mass-search-input-wrap">
+              <input type="text" class="mass-search-input" .value="${e._massSearchQuery||""}"
+                     @input="${t=>e._onMassSearchInput(t)}"
+                     @focus="${()=>e._openSearchSuggestions()}"
+                     @blur="${()=>setTimeout(()=>e._closeSearchSuggestions(),150)}"
+                     @keydown="${t=>{"Enter"===t.key&&e._runMassSearch()}}"
+                     placeholder="${e._t("mass_search_placeholder")}" />
+              ${e._massSearchSuggestionsOpen&&e._getFilteredSearchHistory().length?N`
+                <div class="mass-search-suggestions">
+                  ${e._getFilteredSearchHistory().map(t=>N`
+                    <button type="button" class="mass-search-suggestion-item"
+                            @mousedown="${i=>{i.preventDefault(),e._selectSearchHistoryItem(t)}}">
+                      ${t}
+                    </button>
+                  `)}
+                </div>
+              `:""}
+            </div>
             <button class="mass-search-btn" @click="${()=>e._runMassSearch()}" ?disabled="${e._massSearchLoading}">
-              ${e._massSearchLoading?e._t("mass_search_loading"):e._t("mass_search_button")}
+              ${e._massSearchLoading?N`<span>
+                    <span class="mass-search-spinner mass-search-spinner-inline"></span>
+                    <span>${e._t("mass_search_loading")}</span>
+                  </span>`:e._t("mass_search_button")}
             </button>
           </div>
           <div class="mass-library-section">
-            ${!e._massSearchLoading||e._massSearchResults?.artists?.length||e._massSearchResults?.albums?.length||e._massSearchResults?.tracks?.length?["artists","albums","tracks"].map(t=>{const i="artists"===t?"artist":"albums"===t?"album":"track",a=e._massSearchResults?.[t]??[];return a.length?N`
+            ${!e._massSearchLoading||e._massSearchResults?.artists?.length||e._massSearchResults?.albums?.length||e._massSearchResults?.tracks?.length||e._massSearchResults?.playlists?.length||e._massSearchResults?.podcasts?.length?["artists","albums","tracks","playlists","podcasts"].map(t=>{const i="artists"===t?"artist":"albums"===t?"album":"tracks"===t?"track":"playlists"===t?"playlist":"podcast",a=e._massSearchResults?.[t]??[];return a.length?N`
                     <div class="mass-library-row">
                       <div class="mass-library-row-title">${i.toUpperCase()}</div>
-                      <div class="mass-library-row-scroll">
-                        ${a.map(t=>{const i=t.image||t.album?.image,a=t.artists?.map(e=>e.name).filter(Boolean).join(", ")||"",n=t.album?.name||"";return N`
+                      <div class="mass-library-row-scroll" @mousedown="${t=>e._onMassScrollDragStart(t)}">
+                        ${a.map(t=>{const i=t.image||t.album?.image,a=t.artists?.map(e=>e.name).filter(Boolean).join(", ")||"",s=t.album?.name||"";return N`
                             <button class="mass-library-chip" @click="${()=>e._playMassLibraryItem(t)}">
                               <div class="mass-library-chip-image">
                                 ${i?N`<img src="${i}" alt="" />`:N`<ha-icon icon="mdi:music"></ha-icon>`}
                               </div>
                               <div class="mass-library-chip-text">
                                 <span class="mass-library-chip-title">${t.name||"—"}</span>
-                                ${a||n?N`
-                                  <span class="mass-library-chip-sub">${a||n}</span>
+                                ${a||s?N`
+                                  <span class="mass-library-chip-sub">${a||s}</span>
                                 `:""}
                               </div>
                             </button>
                           `})}
                       </div>
                     </div>
-                  `:""}):N`<div class="mass-queue-empty">${e._t("mass_search_loading")}</div>`}
+                  `:""}):N`
+                  <div class="mass-queue-empty">
+                    <div class="mass-search-spinner mass-search-spinner-center"></div>
+                    <div>${e._t("mass_search_loading")}</div>
+                  </div>
+                `}
           </div>
         </div>
       `:""}
 
       ${e._renderMainButtons(i)}
-    `},vacuum:function(e,t,i="standard",a=!0){const n=t.state,s=t.attributes.battery_level||0,r="mini"===i;return"bar"===i?N`
+      </div>
+    `},vacuum:function(e,t,i="standard",a=!0){const s=t.state,n=t.attributes||{},r=n.battery_level??n.battery??n.battery_percent??n.batteryPercentage,o=null!=r&&Number.isFinite(Number(r))?Math.max(0,Math.min(100,Number(r))):null,c="mini"===i;return"bar"===i?N`
         <div class="bar-content">
           <div class="bar-left">
-            ${e._renderBarIcon(t,"cleaning"===n?"bar-icon-on":"")}
+            ${e._renderBarIcon(t,"cleaning"===s?"bar-icon-on":"")}
             <div class="bar-info">
               <div class="bar-name">${e._renderTitle(t.attributes.friendly_name,i)}</div>
-              <div class="bar-state">${e._getVacuumStateText(n)} · ${s}%</div>
+              <div class="bar-state">${e._getVacuumStateText(s)}${null!=o?` · ${o}%`:""}</div>
             </div>
           </div>
           <div class="bar-right">
@@ -2749,45 +2877,47 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         </div>
         ${e._renderMainButtons(i)}
       `:N`
-      <div class="header ${r?"header-mini":""}">
-        ${e._renderHeaderIcon(t,r)}
-        <div class="device-name ${r?"device-name-mini":""}">
+      <div class="header ${c?"header-mini":""}">
+        ${e._renderHeaderIcon(t,c)}
+        <div class="device-name ${c?"device-name-mini":""}">
           ${e._renderTitle(t.attributes.friendly_name||e._t("device"),i)}
-          <span class="device-value">${e._getVacuumStateText(n)} · ${s}%</span>
+          <span class="device-value">${e._getVacuumStateText(s)}${null!=o?` · ${o}%`:""}</span>
         </div>
         ${e._renderHeaderAction(a)}
       </div>
 
-      <div class="vacuum-status ${r?"vacuum-status-mini":""}">
-        <div class="status-badge ${r?"status-badge-mini":""}">${e._getVacuumStateText(n)}</div>
-        <div class="battery-display ${r?"battery-display-mini":""}">
-          <ha-icon icon="mdi:battery${s>90?"":s>50?"-50":"-20"}"></ha-icon>
-          <span>${s}%</span>
+      <div class="vacuum-status ${c?"vacuum-status-mini":""}">
+        <div class="status-badge ${c?"status-badge-mini":""}">${e._getVacuumStateText(s)}</div>
+        ${null!=o?N`
+        <div class="battery-display ${c?"battery-display-mini":""}">
+          <ha-icon icon="mdi:battery${o>90?"":o>50?"-50":"-20"}"></ha-icon>
+          <span>${o}%</span>
         </div>
+        `:""}
       </div>
 
-      <div class="vacuum-controls ${r?"vacuum-controls-mini":""}">
-        <button class="vacuum-btn ${r?"vacuum-btn-mini":""}" @click="${()=>e._callService("vacuum","start")}">
+      <div class="vacuum-controls ${c?"vacuum-controls-mini":""}">
+        <button class="vacuum-btn ${c?"vacuum-btn-mini":""}" @click="${()=>e._callService("vacuum","start")}">
           <ha-icon icon="mdi:play"></ha-icon>
           <span>${e._t("start")}</span>
         </button>
-        <button class="vacuum-btn ${r?"vacuum-btn-mini":""}" @click="${()=>e._callService("vacuum","pause")}">
+        <button class="vacuum-btn ${c?"vacuum-btn-mini":""}" @click="${()=>e._callService("vacuum","pause")}">
           <ha-icon icon="mdi:pause"></ha-icon>
           <span>${e._t("pause")}</span>
         </button>
-        <button class="vacuum-btn ${r?"vacuum-btn-mini":""}" @click="${()=>e._callService("vacuum","return_to_base")}">
+        <button class="vacuum-btn ${c?"vacuum-btn-mini":""}" @click="${()=>e._callService("vacuum","return_to_base")}">
           <ha-icon icon="mdi:home"></ha-icon>
           <span>${e._t("return_home")}</span>
         </button>
       </div>
       ${e._renderMainButtons(i)}
-    `},water_heater:function(e,t,i="standard",a=!0){const n=t.attributes.temperature||0,s=t.attributes.current_temperature||0,r="mini"===i;return"bar"===i?N`
+    `},water_heater:function(e,t,i="standard",a=!0){const s=t.attributes.temperature||0,n=t.attributes.current_temperature||0,r="mini"===i;return"bar"===i?N`
         <div class="bar-content">
           <div class="bar-left">
             ${e._renderBarIcon(t,"")}
             <div class="bar-info">
               <div class="bar-name">${e._renderTitle(t.attributes.friendly_name,i)}</div>
-              <div class="bar-state">${s}°C → ${n}°C</div>
+              <div class="bar-state">${n}°C → ${s}°C</div>
             </div>
           </div>
           <div class="bar-right">
@@ -2812,7 +2942,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         ${e._renderHeaderIcon(t,r)}
         <div class="device-name ${r?"device-name-mini":""}">
           ${e._renderTitle(t.attributes.friendly_name||e._t("device"),i)}
-          <span class="device-value">${s}°C → ${n}°C</span>
+          <span class="device-value">${n}°C → ${s}°C</span>
         </div>
         ${e._renderHeaderAction(a)}
       </div>
@@ -2823,14 +2953,14 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         </button>
         <div class="target-display">
           <span class="label">${e._t("target_temp")}</span>
-          <span class="value ${r?"value-mini":""}">${n}°C</span>
+          <span class="value ${r?"value-mini":""}">${s}°C</span>
         </div>
         <button class="adj-btn ${r?"adj-btn-mini":""}" @click="${()=>e._adjustWaterTemp(1)}">
           <ha-icon icon="mdi:plus"></ha-icon>
         </button>
       </div>
       ${e._renderMainButtons(i)}
-    `},generic:function(e,t,i="standard",a=!0){const n="mini"===i;return"bar"===i?N`
+    `},generic:function(e,t,i="standard",a=!0){const s="mini"===i;return"bar"===i?N`
         <div class="bar-content">
           <div class="bar-left">
             ${e._renderBarIcon(t,"")}
@@ -2849,31 +2979,31 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         </div>
         ${e._renderMainButtons(i)}
       `:N`
-      <div class="header ${n?"header-mini":""}">
-        ${e._renderHeaderIcon(t,n)}
-        <div class="device-name ${n?"device-name-mini":""}">
+      <div class="header ${s?"header-mini":""}">
+        ${e._renderHeaderIcon(t,s)}
+        <div class="device-name ${s?"device-name-mini":""}">
           ${e._renderTitle(t.attributes.friendly_name||e._t("device"),i)}
           <span class="device-value">${t.state}</span>
         </div>
         ${e._renderHeaderAction(a)}
       </div>
 
-      <div class="temp-control ${n?"temp-control-mini":""}">
+      <div class="temp-control ${s?"temp-control-mini":""}">
         <div style="width: 64px;"></div>
         <div class="target-display">
           <span class="label">${e._t("device")}</span>
-          <span class="value ${n?"value-mini":""}">${t.state}</span>
+          <span class="value ${s?"value-mini":""}">${t.state}</span>
         </div>
         <div style="width: 64px;"></div>
       </div>
       ${e._renderMainButtons(i)}
-    `}};customElements.define("universal-device-card",class extends ee{static get properties(){return{hass:{},config:{},_showPopup:{type:Boolean},_showTextPopup:{type:Boolean},_popupText:{type:String},_translations:{type:Object},_fanModeExpanded:{type:Boolean},_massQueueItems:{type:Array},_massQueueExpanded:{type:Boolean},_massQueueLoading:{type:Boolean},_massLibraryItems:{type:Array},_massLibraryExpanded:{type:Boolean},_massLibraryLoading:{type:Boolean},_massSearchExpanded:{type:Boolean},_massSearchQuery:{type:String},_massSearchLoading:{type:Boolean},_massSearchResults:{type:Object}}}constructor(){super(),this._showPopup=!1,this._showTextPopup=!1,this._popupText="",this._translations={},this._fanModeExpanded=!1,this._iconLongPressTimer=null,this._iconLongPressFired=!1,this._iconLastTapTime=0,this._massQueueItems=[],this._massQueueExpanded=!1,this._massQueueLoading=!1,this._massLibraryItems=[],this._massLibraryExpanded=!1,this._massLibraryLoading=!1,this._massSearchExpanded=!1,this._massSearchQuery="",this._massSearchLoading=!1,this._massSearchResults={artists:[],albums:[],tracks:[]}}async connectedCallback(){super.connectedCallback(),await this._loadTranslations(),this._createPopupPortal()}disconnectedCallback(){super.disconnectedCallback(),this._removePopupPortal()}_createPopupPortal(){if(!this._popupPortal){this._popupPortal=document.createElement("div"),this._popupPortal.className="udc-popup-portal";const e=this._isInBubbleCardPopup(),t=e?1e4:1e3;this._popupPortal.style.cssText=`position: fixed; inset: 0; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; min-height: -webkit-fill-available; pointer-events: none; z-index: ${t};`;const i=document.createElement("style");i.textContent=function(e=!1){return`\n      .popup-overlay {\n        position: fixed !important; \n        inset: 0 !important;\n        top: 0 !important; \n        left: 0 !important; \n        right: 0 !important; \n        bottom: 0 !important;\n        min-height: 100vh;\n        min-height: 100dvh;\n        padding:\n          env(safe-area-inset-top, 0px)\n          env(safe-area-inset-right, 0px)\n          env(safe-area-inset-bottom, 0px)\n          env(safe-area-inset-left, 0px);\n        background: rgba(0,0,0,0.7); \n        backdrop-filter: blur(12px);\n        -webkit-backdrop-filter: blur(12px);\n        display: flex; \n        align-items: flex-end;\n        justify-content: center; \n        z-index: ${e?1e4:1e3} !important;\n        animation: fadeIn 0.3s;\n        transform: none !important;\n        will-change: auto;\n        overscroll-behavior: contain;\n      }\n      \n      .popup-content {\n        width: 100%; \n        max-height: 85vh; \n        max-height: 85dvh;\n        background: var(--card-background-color, #fff);\n        border-radius: 36px 36px 0 0; \n        padding: 20px;\n        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));\n        overflow-y: auto; \n        -webkit-overflow-scrolling: touch;\n        overscroll-behavior: contain;\n        animation: slideUp 0.4s cubic-bezier(0.2, 1, 0.3, 1);\n        color: var(--primary-text-color, #000);\n        scrollbar-width: thin;\n        scrollbar-color: rgba(var(--rgb-primary-text-color, 128, 128, 128), 0.3) transparent;\n      }\n\n      .popup-content::-webkit-scrollbar {\n        width: 6px;\n      }\n\n      .popup-content::-webkit-scrollbar-track {\n        background: transparent;\n        border-radius: 10px;\n      }\n\n      .popup-content::-webkit-scrollbar-thumb {\n        background: rgba(var(--rgb-primary-text-color, 128, 128, 128), 0.3);\n        border-radius: 10px;\n        transition: background 0.3s;\n      }\n\n      .popup-content::-webkit-scrollbar-thumb:hover {\n        background: rgba(var(--rgb-primary-text-color, 128, 128, 128), 0.5);\n      }\n\n      .popup-content.hide-scrollbar {\n        scrollbar-width: none;\n        -ms-overflow-style: none;\n      }\n\n      .popup-content.hide-scrollbar::-webkit-scrollbar {\n        display: none;\n      }\n\n      @supports (-webkit-touch-callout: none) {\n        .popup-overlay {\n          min-height: -webkit-fill-available;\n        }\n\n        .popup-content {\n          max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 8px);\n          border-radius: 30px 30px 0 0;\n        }\n      }\n\n      @media (min-width: 768px) {\n        .popup-overlay {\n          align-items: center;\n          padding: 20px;\n        }\n\n        .popup-content {\n          max-width: 600px;\n          width: 90%;\n          max-height: 80vh;\n          max-height: 80dvh;\n          border-radius: 24px;\n          padding-bottom: 20px;\n          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);\n          animation: scaleIn 0.3s cubic-bezier(0.2, 1, 0.3, 1);\n        }\n\n        .popup-content::-webkit-scrollbar {\n          width: 8px;\n        }\n\n        @keyframes scaleIn {\n          from {\n            opacity: 0;\n            transform: scale(0.9);\n          }\n          to {\n            opacity: 1;\n            transform: scale(1);\n          }\n        }\n      }\n      \n      .popup-header {\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        position: relative;\n        margin-bottom: 24px;\n      }\n      \n      .popup-drag-handle { \n        width: 50px; \n        height: 5px; \n        background: rgba(128, 128, 128, 0.2); \n        border-radius: 3px; \n      }\n      \n      .close-btn {\n        position: absolute;\n        right: 0;\n        cursor: pointer;\n        color: var(--secondary-text-color, #666);\n        padding: 4px;\n        transition: color 0.3s;\n        font-size: 24px;\n        width: 32px;\n        height: 32px;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n      }\n\n      .close-btn:hover {\n        color: var(--primary-text-color, #000);\n      }\n\n      .chips-container { \n        display: flex; \n        flex-wrap: wrap; \n        gap: 10px; \n        margin-bottom: 20px;\n      }\n      \n      .chip { \n        padding: 10px 16px; \n        border-radius: 20px; \n        background: rgba(128, 128, 128, 0.1); \n        display: flex; \n        align-items: center; \n        gap: 8px; \n        font-size: 0.9rem;\n      }\n\n      .chip-unavailable {\n        opacity: 0.5;\n      }\n\n      .chip ha-icon {\n        width: 20px;\n        height: 20px;\n      }\n\n      .controls-list {\n        display: flex;\n        flex-direction: column;\n        gap: 12px;\n      }\n\n      .control-card {\n        background: rgba(128, 128, 128, 0.05);\n        border-radius: 16px;\n        padding: 16px;\n      }\n\n      .control-card-unavailable {\n        opacity: 0.5;\n      }\n\n      .control-header {\n        display: flex;\n        align-items: center;\n        gap: 12px;\n        margin-bottom: 12px;\n        font-weight: 600;\n      }\n\n      .control-header ha-icon {\n        width: 24px;\n        height: 24px;\n      }\n\n      .unavailable-badge {\n        margin-left: auto;\n        padding: 4px 12px;\n        background: rgba(255, 152, 0, 0.2);\n        color: #ff9800;\n        border-radius: 12px;\n        font-size: 0.75rem;\n      }\n\n      .control-action {\n        display: flex;\n        align-items: center;\n        justify-content: flex-end;\n      }\n\n      .select-grid {\n        display: grid;\n        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));\n        gap: 8px;\n      }\n\n      .select-opt {\n        padding: 10px;\n        border-radius: 12px;\n        background: rgba(128, 128, 128, 0.1);\n        text-align: center;\n        cursor: pointer;\n        transition: all 0.3s;\n        font-size: 0.9rem;\n      }\n\n      .select-opt:hover:not(.disabled) {\n        background: rgba(128, 128, 128, 0.2);\n      }\n\n      .select-opt.active {\n        background: var(--accent-color, #03a9f4);\n        color: white;\n      }\n\n      .select-opt.disabled {\n        opacity: 0.5;\n        cursor: not-allowed;\n      }\n\n      .number-control {\n        display: flex;\n        align-items: center;\n        gap: 16px;\n      }\n\n      .number-control button {\n        width: 40px;\n        height: 40px;\n        border-radius: 50%;\n        border: none;\n        background: rgba(128, 128, 128, 0.1);\n        cursor: pointer;\n        transition: all 0.3s;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n      }\n\n      .number-control button:hover:not(:disabled) {\n        background: rgba(128, 128, 128, 0.2);\n        transform: scale(1.1);\n      }\n\n      .number-control button:disabled {\n        opacity: 0.5;\n        cursor: not-allowed;\n      }\n\n      .number-control button ha-icon {\n        width: 20px;\n        height: 20px;\n      }\n\n      .number-control span {\n        min-width: 50px;\n        text-align: center;\n        font-weight: 600;\n      }\n\n      .action-btn {\n        width: 48px;\n        height: 48px;\n        border-radius: 50%;\n        border: none;\n        background: var(--accent-color, #03a9f4);\n        color: white;\n        cursor: pointer;\n        transition: all 0.3s;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n      }\n\n      .action-btn:hover:not(:disabled) {\n        transform: scale(1.1);\n      }\n\n      .action-btn:disabled {\n        opacity: 0.5;\n        cursor: not-allowed;\n        background: rgba(128, 128, 128, 0.3);\n      }\n\n      .action-btn ha-icon {\n        width: 24px;\n        height: 24px;\n      }\n\n      .state-text {\n        padding: 8px 16px;\n        background: rgba(128, 128, 128, 0.1);\n        border-radius: 12px;\n        font-size: 0.9rem;\n      }\n\n      .unavailable-text {\n        color: #ff9800;\n      }\n\n      .no-controls {\n        text-align: center;\n        padding: 40px 20px;\n        color: var(--secondary-text-color, #666);\n        font-size: 1rem;\n      }\n\n      @keyframes fadeIn {\n        from { opacity: 0; }\n        to { opacity: 1; }\n      }\n\n      @keyframes slideUp {\n        from {\n          transform: translateY(100%);\n        }\n        to {\n          transform: translateY(0);\n        }\n      }\n\n      ha-switch {\n        --mdc-theme-secondary: var(--accent-color, #03a9f4);\n      }\n\n      ha-icon {\n        color: var(--primary-text-color, #000);\n      }\n    `}(e),this._popupPortal.appendChild(i),document.body.appendChild(this._popupPortal)}}_isInBubbleCardPopup(){let e=this;for(;e&&e.parentNode;){if(e=e.parentNode,e.host&&(e=e.host),e.classList){if(Array.from(e.classList).some(e=>e.includes("bubble")||e.includes("popup-container")))return!0}if("BUBBLE-CARD"===e.tagName||"BUBBLE-POP-UP"===e.tagName)return!0}return!1}_removePopupPortal(){this._popupPortal&&this._popupPortal.parentNode&&(this._popupPortal.parentNode.removeChild(this._popupPortal),this._popupPortal=null)}async _loadTranslations(){const e=this.config?.language||this.hass?.language||"en",t={"zh-Hant":"zh-TW"}[e]||e;if(this._translations=ie[t]||ie[e]||ie.en,"auto"!==e)try{const i=te();let a=await fetch(`${i}${e}.json`);if(a.ok||e===t||(a=await fetch(`${i}${t}.json`)),a.ok){const e=await a.json();this._translations={...this._translations,...e}}}catch(e){}}_t(e){return this._translations[e]||ie.en[e]||e}static getConfigElement(){return document.createElement("universal-device-card-editor")}static getStubConfig(){return{entity:"",layout:"standard",language:"auto",disable_popup:!1,show_buttons:[]}}_getDeviceType(){return this.config.entity.split(".")[0]}_shouldFilterEntity(e){const t=this.config.popup_filters||{},i=e.entity_id,a=i.split(".")[0];if(t.exclude_domains&&t.exclude_domains.includes(a))return!0;if(t.include_domains&&!t.include_domains.includes(a))return!0;if(t.exclude_entities&&t.exclude_entities.includes(i))return!0;if(t.include_entities&&!t.include_entities.includes(i))return!0;if("sensor"===a&&t.exclude_sensor_classes){const i=e.attributes.device_class;if(i&&t.exclude_sensor_classes.includes(i))return!0}if("sensor"===a&&t.include_sensor_classes){const i=e.attributes.device_class;if(!i||!t.include_sensor_classes.includes(i))return!0}return!1}_getStateColor(){const e=this.hass.states[this.config.entity];return e?le(this._getDeviceType(),e.state):"var(--ha-card-background)"}_getRelatedEntities(){if(!0===this.config.disable_popup)return[];const e=this.hass.entities[this.config.entity];if(!e)return[];const t=e.device_id;return Object.values(this.hass.states).filter(e=>{const i=this.hass.entities[e.entity_id];return i&&i.device_id===t&&e.entity_id!==this.config.entity}).filter(e=>!this._shouldFilterEntity(e))}_isEntityAvailable(e){return"unavailable"!==e.state&&"unknown"!==e.state}_getMainButtons(){return this.config.show_buttons&&Array.isArray(this.config.show_buttons)?this.config.show_buttons.map(e=>this.hass.states[e]).filter(e=>void 0!==e):[]}_showTextDialog(e){this._popupText=e,this._showTextPopup=!0}render(){const e=this.hass.states[this.config.entity];if(!e)return N`<ha-card>???????/ha-card>`;const t=this._getStateColor(),i=this._getDeviceType(),a=this.config.layout||"standard",n=!0!==this.config.disable_popup;return N`
+    `}};customElements.define("universal-device-card",class extends ee{static get properties(){return{hass:{},config:{},_showPopup:{type:Boolean},_showTextPopup:{type:Boolean},_popupText:{type:String},_translations:{type:Object},_fanModeExpanded:{type:Boolean},_massQueueItems:{type:Array},_massQueueExpanded:{type:Boolean},_massQueueLoading:{type:Boolean},_massLibraryItems:{type:Array},_massLibraryExpanded:{type:Boolean},_massLibraryLoading:{type:Boolean},_massSearchExpanded:{type:Boolean},_massSearchQuery:{type:String},_massSearchLoading:{type:Boolean},_massSearchResults:{type:Object}}}constructor(){super(),this._showPopup=!1,this._showTextPopup=!1,this._popupText="",this._translations={},this._fanModeExpanded=!1,this._iconLongPressTimer=null,this._iconLongPressFired=!1,this._iconLastTapTime=0,this._massQueueItems=[],this._massQueueExpanded=!1,this._massQueueLoading=!1,this._massLibraryItems=[],this._massLibraryExpanded=!1,this._massLibraryLoading=!1,this._massSearchExpanded=!1,this._massSearchQuery="",this._massSearchLoading=!1,this._massSearchResults={artists:[],albums:[],tracks:[],playlists:[],podcasts:[]},this._massSearchSuggestionsOpen=!1,this._massSearchHistory=[]}async connectedCallback(){super.connectedCallback(),await this._loadTranslations(),this._createPopupPortal(),this._loadSearchHistory()}disconnectedCallback(){super.disconnectedCallback(),this._removePopupPortal()}_createPopupPortal(){if(!this._popupPortal){this._popupPortal=document.createElement("div"),this._popupPortal.className="udc-popup-portal";const e=this._isInBubbleCardPopup(),t=e?1e4:1e3;this._popupPortal.style.cssText=`position: fixed; inset: 0; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; min-height: -webkit-fill-available; pointer-events: none; z-index: ${t};`;const i=document.createElement("style");i.textContent=function(e=!1){return`\n      .popup-overlay {\n        position: fixed !important; \n        inset: 0 !important;\n        top: 0 !important; \n        left: 0 !important; \n        right: 0 !important; \n        bottom: 0 !important;\n        min-height: 100vh;\n        min-height: 100dvh;\n        padding:\n          env(safe-area-inset-top, 0px)\n          env(safe-area-inset-right, 0px)\n          env(safe-area-inset-bottom, 0px)\n          env(safe-area-inset-left, 0px);\n        background: rgba(0,0,0,0.7); \n        backdrop-filter: blur(12px);\n        -webkit-backdrop-filter: blur(12px);\n        display: flex; \n        align-items: flex-end;\n        justify-content: center; \n        z-index: ${e?1e4:1e3} !important;\n        animation: fadeIn 0.3s;\n        transform: none !important;\n        will-change: auto;\n        overscroll-behavior: contain;\n      }\n      \n      .popup-content {\n        width: 100%; \n        max-height: 85vh; \n        max-height: 85dvh;\n        background: var(--card-background-color, #fff);\n        border-radius: 36px 36px 0 0; \n        padding: 20px;\n        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));\n        overflow-y: auto; \n        -webkit-overflow-scrolling: touch;\n        overscroll-behavior: contain;\n        animation: slideUp 0.4s cubic-bezier(0.2, 1, 0.3, 1);\n        color: var(--primary-text-color, #000);\n        scrollbar-width: thin;\n        scrollbar-color: rgba(var(--rgb-primary-text-color, 128, 128, 128), 0.3) transparent;\n      }\n\n      .popup-content::-webkit-scrollbar {\n        width: 6px;\n      }\n\n      .popup-content::-webkit-scrollbar-track {\n        background: transparent;\n        border-radius: 10px;\n      }\n\n      .popup-content::-webkit-scrollbar-thumb {\n        background: rgba(var(--rgb-primary-text-color, 128, 128, 128), 0.3);\n        border-radius: 10px;\n        transition: background 0.3s;\n      }\n\n      .popup-content::-webkit-scrollbar-thumb:hover {\n        background: rgba(var(--rgb-primary-text-color, 128, 128, 128), 0.5);\n      }\n\n      .popup-content.hide-scrollbar {\n        scrollbar-width: none;\n        -ms-overflow-style: none;\n      }\n\n      .popup-content.hide-scrollbar::-webkit-scrollbar {\n        display: none;\n      }\n\n      @supports (-webkit-touch-callout: none) {\n        .popup-overlay {\n          min-height: -webkit-fill-available;\n        }\n\n        .popup-content {\n          max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 8px);\n          border-radius: 30px 30px 0 0;\n        }\n      }\n\n      @media (min-width: 768px) {\n        .popup-overlay {\n          align-items: center;\n          padding: 20px;\n        }\n\n        .popup-content {\n          max-width: 600px;\n          width: 90%;\n          max-height: 80vh;\n          max-height: 80dvh;\n          border-radius: 24px;\n          padding-bottom: 20px;\n          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);\n          animation: scaleIn 0.3s cubic-bezier(0.2, 1, 0.3, 1);\n        }\n\n        .popup-content::-webkit-scrollbar {\n          width: 8px;\n        }\n\n        @keyframes scaleIn {\n          from {\n            opacity: 0;\n            transform: scale(0.9);\n          }\n          to {\n            opacity: 1;\n            transform: scale(1);\n          }\n        }\n      }\n      \n      .popup-header {\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        position: relative;\n        margin-bottom: 24px;\n      }\n      \n      .popup-drag-handle { \n        width: 50px; \n        height: 5px; \n        background: rgba(128, 128, 128, 0.2); \n        border-radius: 3px; \n      }\n      \n      .close-btn {\n        position: absolute;\n        right: 0;\n        cursor: pointer;\n        color: var(--secondary-text-color, #666);\n        padding: 4px;\n        transition: color 0.3s;\n        font-size: 24px;\n        width: 32px;\n        height: 32px;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n      }\n\n      .close-btn:hover {\n        color: var(--primary-text-color, #000);\n      }\n\n      .chips-container { \n        display: flex; \n        flex-wrap: wrap; \n        gap: 10px; \n        margin-bottom: 20px;\n      }\n      \n      .chip { \n        padding: 10px 16px; \n        border-radius: 20px; \n        background: rgba(128, 128, 128, 0.1); \n        display: flex; \n        align-items: center; \n        gap: 8px; \n        font-size: 0.9rem;\n      }\n\n      .chip-unavailable {\n        opacity: 0.5;\n      }\n\n      .chip ha-icon {\n        width: 20px;\n        height: 20px;\n      }\n\n      .controls-list {\n        display: flex;\n        flex-direction: column;\n        gap: 12px;\n      }\n\n      .control-card {\n        background: rgba(128, 128, 128, 0.05);\n        border-radius: 16px;\n        padding: 16px;\n      }\n\n      .control-card-unavailable {\n        opacity: 0.5;\n      }\n\n      .control-header {\n        display: flex;\n        align-items: center;\n        gap: 12px;\n        margin-bottom: 12px;\n        font-weight: 600;\n      }\n\n      .control-header ha-icon {\n        width: 24px;\n        height: 24px;\n      }\n\n      .unavailable-badge {\n        margin-left: auto;\n        padding: 4px 12px;\n        background: rgba(255, 152, 0, 0.2);\n        color: #ff9800;\n        border-radius: 12px;\n        font-size: 0.75rem;\n      }\n\n      .control-action {\n        display: flex;\n        align-items: center;\n        justify-content: flex-end;\n      }\n\n      .select-grid {\n        display: grid;\n        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));\n        gap: 8px;\n      }\n\n      .select-opt {\n        padding: 10px;\n        border-radius: 12px;\n        background: rgba(128, 128, 128, 0.1);\n        text-align: center;\n        cursor: pointer;\n        transition: all 0.3s;\n        font-size: 0.9rem;\n      }\n\n      .select-opt:hover:not(.disabled) {\n        background: rgba(128, 128, 128, 0.2);\n      }\n\n      .select-opt.active {\n        background: var(--accent-color, #03a9f4);\n        color: white;\n      }\n\n      .select-opt.disabled {\n        opacity: 0.5;\n        cursor: not-allowed;\n      }\n\n      .number-control {\n        display: flex;\n        align-items: center;\n        gap: 16px;\n      }\n\n      .number-control button {\n        width: 40px;\n        height: 40px;\n        border-radius: 50%;\n        border: none;\n        background: rgba(128, 128, 128, 0.1);\n        cursor: pointer;\n        transition: all 0.3s;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n      }\n\n      .number-control button:hover:not(:disabled) {\n        background: rgba(128, 128, 128, 0.2);\n        transform: scale(1.1);\n      }\n\n      .number-control button:disabled {\n        opacity: 0.5;\n        cursor: not-allowed;\n      }\n\n      .number-control button ha-icon {\n        width: 20px;\n        height: 20px;\n      }\n\n      .number-control span {\n        min-width: 50px;\n        text-align: center;\n        font-weight: 600;\n      }\n\n      .action-btn {\n        width: 48px;\n        height: 48px;\n        border-radius: 50%;\n        border: none;\n        background: var(--accent-color, #03a9f4);\n        color: white;\n        cursor: pointer;\n        transition: all 0.3s;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n      }\n\n      .action-btn:hover:not(:disabled) {\n        transform: scale(1.1);\n      }\n\n      .action-btn:disabled {\n        opacity: 0.5;\n        cursor: not-allowed;\n        background: rgba(128, 128, 128, 0.3);\n      }\n\n      .action-btn ha-icon {\n        width: 24px;\n        height: 24px;\n      }\n\n      .state-text {\n        padding: 8px 16px;\n        background: rgba(128, 128, 128, 0.1);\n        border-radius: 12px;\n        font-size: 0.9rem;\n      }\n\n      .unavailable-text {\n        color: #ff9800;\n      }\n\n      .no-controls {\n        text-align: center;\n        padding: 40px 20px;\n        color: var(--secondary-text-color, #666);\n        font-size: 1rem;\n      }\n\n      @keyframes fadeIn {\n        from { opacity: 0; }\n        to { opacity: 1; }\n      }\n\n      @keyframes slideUp {\n        from {\n          transform: translateY(100%);\n        }\n        to {\n          transform: translateY(0);\n        }\n      }\n\n      ha-switch {\n        --mdc-theme-secondary: var(--accent-color, #03a9f4);\n      }\n\n      ha-icon {\n        color: var(--primary-text-color, #000);\n      }\n    `}(e),this._popupPortal.appendChild(i),document.body.appendChild(this._popupPortal)}}_isInBubbleCardPopup(){let e=this;for(;e&&e.parentNode;){if(e=e.parentNode,e.host&&(e=e.host),e.classList){if(Array.from(e.classList).some(e=>e.includes("bubble")||e.includes("popup-container")))return!0}if("BUBBLE-CARD"===e.tagName||"BUBBLE-POP-UP"===e.tagName)return!0}return!1}_removePopupPortal(){this._popupPortal&&this._popupPortal.parentNode&&(this._popupPortal.parentNode.removeChild(this._popupPortal),this._popupPortal=null)}async _loadTranslations(){const e=this.config?.language||this.hass?.language||"en",t={"zh-Hant":"zh-TW"}[e]||e;if(this._translations=ie[t]||ie[e]||ie.en,"auto"!==e)try{const i=te();let a=await fetch(`${i}${e}.json`);if(a.ok||e===t||(a=await fetch(`${i}${t}.json`)),a.ok){const e=await a.json();this._translations={...this._translations,...e}}}catch(e){}}_t(e){return this._translations[e]||ie.en[e]||e}static getConfigElement(){return document.createElement("universal-device-card-editor")}static getStubConfig(){return{entity:"",layout:"standard",language:"auto",disable_popup:!1,show_buttons:[]}}_getDeviceType(){return this.config.entity.split(".")[0]}_shouldFilterEntity(e){const t=this.config.popup_filters||{},i=e.entity_id,a=i.split(".")[0];if(t.exclude_domains&&t.exclude_domains.includes(a))return!0;if(t.include_domains&&!t.include_domains.includes(a))return!0;if(t.exclude_entities&&t.exclude_entities.includes(i))return!0;if(t.include_entities&&!t.include_entities.includes(i))return!0;if("sensor"===a&&t.exclude_sensor_classes){const i=e.attributes.device_class;if(i&&t.exclude_sensor_classes.includes(i))return!0}if("sensor"===a&&t.include_sensor_classes){const i=e.attributes.device_class;if(!i||!t.include_sensor_classes.includes(i))return!0}return!1}_getStateColor(){const e=this.hass.states[this.config.entity];return e?le(this._getDeviceType(),e.state):"var(--ha-card-background)"}_getRelatedEntities(){if(!0===this.config.disable_popup)return[];const e=this.hass.entities[this.config.entity];if(!e)return[];const t=e.device_id;return Object.values(this.hass.states).filter(e=>{const i=this.hass.entities[e.entity_id];return i&&i.device_id===t&&e.entity_id!==this.config.entity}).filter(e=>!this._shouldFilterEntity(e))}_isEntityAvailable(e){return"unavailable"!==e.state&&"unknown"!==e.state}_getMainButtons(){return this.config.show_buttons&&Array.isArray(this.config.show_buttons)?this.config.show_buttons.map(e=>this.hass.states[e]).filter(e=>void 0!==e):[]}_showTextDialog(e){this._popupText=e,this._showTextPopup=!0}render(){const e=this.hass.states[this.config.entity];if(!e)return N`<ha-card>???????/ha-card>`;const t=this._getStateColor(),i=this._getDeviceType(),a=this.config.layout||"standard",s=!0!==this.config.disable_popup;return N`
       <ha-card class="main-container ${a}-layout" 
                style="background-color: ${t}">
-        ${this._renderDeviceSpecificContent(e,i,a,n)}
+        ${this._renderDeviceSpecificContent(e,i,a,s)}
         ${this._showTextPopup?this._renderTextPopup():""}
       </ha-card>
-    `}updated(e){super.updated(e),this.hass&&this.config?.entity&&(this._services=function(e,t){if(!e||!t)return null;const i=t;return{callService(t,a,n={}){e.callService(t,a,{entity_id:i,...n})},toggle(t=i){e.callService("homeassistant","toggle",{entity_id:t})},setSelect(t,i){e.callService("select","select_option",{entity_id:t,option:i})},adjustNumber(t,i){const a=e.states[t];if(!a)return;const n=parseFloat(a.state),s=a.attributes.step||1,r=a.attributes.min,o=a.attributes.max;let c=n+i*s;void 0!==r&&(c=Math.max(r,c)),void 0!==o&&(c=Math.min(o,c));const l="number"===t.split(".")[0]?"number":"input_number";e.callService(l,"set_value",{entity_id:t,value:c})},pressButton(t){e.callService("button","press",{entity_id:t})},adjustTemp(t){const a=e.states[i].attributes.temperature+t;e.callService("climate","set_temperature",{entity_id:i,temperature:a})},setClimateMode(t){e.callService("climate","set_hvac_mode",{entity_id:i,hvac_mode:t})},setFanMode(t){e.callService("climate","set_fan_mode",{entity_id:i,fan_mode:t})},setBrightness(t){const a=Math.round(t/100*255);e.callService("light","turn_on",{entity_id:i,brightness:a})},setFanSpeed(t){e.callService("fan","set_percentage",{entity_id:i,percentage:parseInt(t)})},setCoverPosition(t){e.callService("cover","set_cover_position",{entity_id:i,position:parseInt(t)})},setCoverTiltPosition(t){e.callService("cover","set_cover_tilt_position",{entity_id:i,tilt_position:parseInt(t)})},setVolume(t){e.callService("media_player","volume_set",{entity_id:i,volume_level:t/100})},setFanPresetMode(t){e.callService("fan","set_preset_mode",{entity_id:i,preset_mode:t})},setWaterHeaterTemp(t){e.callService("water_heater","set_temperature",{entity_id:i,temperature:t})},adjustWaterTemp(t){const a=e.states[i].attributes.temperature+t;e.callService("water_heater","set_temperature",{entity_id:i,temperature:a})}}}(this.hass,this.config.entity)),e.has("_showPopup")&&this._updatePopupPortal()}_updatePopupPortal(){if(this._popupPortal)if(this._showPopup&&!this.config.disable_popup)this._popupPortal.style.pointerEvents="auto",this._renderPopupToPortal();else{this._popupPortal.style.pointerEvents="none";const e=this._popupPortal.querySelector(".popup-overlay");e&&e.remove()}}_renderPopupToPortal(){const e=this._getRelatedEntities(),t=e.filter(e=>e.entity_id.startsWith("sensor")),i=e.filter(e=>!e.entity_id.startsWith("sensor")),a=document.createElement("div");a.className="popup-overlay",a.addEventListener("click",e=>{e.target===a&&(this._showPopup=!1,this.requestUpdate())});const n=document.createElement("div"),s=!0===this.config?.hide_popup_scrollbar;n.className=s?"popup-content hide-scrollbar":"popup-content",n.addEventListener("click",e=>e.stopPropagation());const r=document.createElement("div");if(r.className="popup-header",r.innerHTML='\n      <div class="popup-drag-handle"></div>\n      <ha-icon class="close-btn" icon="mdi:close"></ha-icon>\n    ',r.querySelector(".close-btn").addEventListener("click",()=>{this._showPopup=!1,this.requestUpdate()}),n.appendChild(r),t.length>0){const e=document.createElement("div");e.className="chips-container",t.forEach(t=>{const i=this._isEntityAvailable(t),a=document.createElement("div");a.className="chip "+(i?"":"chip-unavailable"),a.innerHTML=`\n          <ha-icon icon="${t.attributes.icon||"mdi:information-outline"}"></ha-icon>\n          <span>${i?`${t.state} ${t.attributes.unit_of_measurement||""}`:this._t("unavailable")}</span>\n        `,e.appendChild(a)}),n.appendChild(e)}if(i.length>0){const e=document.createElement("div");e.className="controls-list",i.forEach(t=>{const i=this._createControlCardElement(t);e.appendChild(i)}),n.appendChild(e)}else{const e=document.createElement("div");e.className="no-controls",e.textContent=this._t("no_controls"),n.appendChild(e)}a.appendChild(n);const o=this._popupPortal.querySelector(".popup-overlay");o&&o.remove(),this._popupPortal.appendChild(a)}_createControlCardElement(e){const t=e.entity_id.split(".")[0],i=this._isEntityAvailable(e),a=document.createElement("div");a.className="control-card "+(i?"":"control-card-unavailable");const n=document.createElement("div");n.className="control-header",n.innerHTML=`\n      <ha-icon icon="${e.attributes.icon||se(t)}"></ha-icon>\n      <span>${e.attributes.friendly_name}</span>\n      ${i?"":`<span class="unavailable-badge">${this._t("unavailable")}</span>`}\n    `;const s=document.createElement("div");return s.className="control-action",i?this._populateControlAction(s,e,t):s.innerHTML=`<span class="state-text unavailable-text">${e.state}</span>`,a.appendChild(n),a.appendChild(s),a}_populateControlAction(e,t,i){!function(e,t,i,a){const n=a.isEntityAvailable(t);switch(i){case"switch":case"input_boolean":{const i=document.createElement("ha-switch");i.checked="on"===t.state,i.disabled=!n,i.addEventListener("change",()=>n&&a.toggle(t.entity_id)),e.appendChild(i);break}case"select":case"input_select":{const i=document.createElement("div");i.className="select-grid",(t.attributes.options||[]).forEach(e=>{const s=document.createElement("div");s.className=`select-opt ${t.state===e?"active":""} ${n?"":"disabled"}`,s.textContent=e,s.addEventListener("click",()=>n&&a.setSelect(t.entity_id,e)),i.appendChild(s)}),e.appendChild(i);break}case"number":case"input_number":{const i=document.createElement("div");i.className="number-control",i.innerHTML=`\n        <button ${n?"":"disabled"}><ha-icon icon="mdi:minus"></ha-icon></button>\n        <span>${t.state}</span>\n        <button ${n?"":"disabled"}><ha-icon icon="mdi:plus"></ha-icon></button>\n      `,i.querySelectorAll("button")[0].addEventListener("click",()=>n&&a.adjustNumber(t.entity_id,-1)),i.querySelectorAll("button")[1].addEventListener("click",()=>n&&a.adjustNumber(t.entity_id,1)),e.appendChild(i);break}case"button":{const i=document.createElement("button");i.className="action-btn",i.disabled=!n,i.innerHTML='<ha-icon icon="mdi:gesture-tap"></ha-icon>',i.addEventListener("click",()=>n&&a.pressButton(t.entity_id)),e.appendChild(i);break}default:e.innerHTML=`<span class="state-text">${t.state}</span>`}}(e,t,i,{toggle:e=>this._toggleEntity(e),setSelect:(e,t)=>this._setSelect(e,t),adjustNumber:(e,t)=>this._adjustNumber(e,t),pressButton:e=>this._pressButton(e),isEntityAvailable:e=>this._isEntityAvailable(e)})}_renderTextPopup(){return N`
+    `}updated(e){super.updated(e),this.hass&&this.config?.entity&&(this._services=function(e,t){if(!e||!t)return null;const i=t;return{callService(t,a,s={}){e.callService(t,a,{entity_id:i,...s})},toggle(t=i){e.callService("homeassistant","toggle",{entity_id:t})},setSelect(t,i){e.callService("select","select_option",{entity_id:t,option:i})},adjustNumber(t,i){const a=e.states[t];if(!a)return;const s=parseFloat(a.state),n=a.attributes.step||1,r=a.attributes.min,o=a.attributes.max;let c=s+i*n;void 0!==r&&(c=Math.max(r,c)),void 0!==o&&(c=Math.min(o,c));const l="number"===t.split(".")[0]?"number":"input_number";e.callService(l,"set_value",{entity_id:t,value:c})},pressButton(t){e.callService("button","press",{entity_id:t})},adjustTemp(t){const a=e.states[i].attributes.temperature+t;e.callService("climate","set_temperature",{entity_id:i,temperature:a})},setClimateMode(t){e.callService("climate","set_hvac_mode",{entity_id:i,hvac_mode:t})},setFanMode(t){e.callService("climate","set_fan_mode",{entity_id:i,fan_mode:t})},setBrightness(t){const a=Math.round(t/100*255);e.callService("light","turn_on",{entity_id:i,brightness:a})},setFanSpeed(t){e.callService("fan","set_percentage",{entity_id:i,percentage:parseInt(t)})},setCoverPosition(t){e.callService("cover","set_cover_position",{entity_id:i,position:parseInt(t)})},setCoverTiltPosition(t){e.callService("cover","set_cover_tilt_position",{entity_id:i,tilt_position:parseInt(t)})},setVolume(t){e.callService("media_player","volume_set",{entity_id:i,volume_level:t/100})},setFanPresetMode(t){e.callService("fan","set_preset_mode",{entity_id:i,preset_mode:t})},setWaterHeaterTemp(t){e.callService("water_heater","set_temperature",{entity_id:i,temperature:t})},adjustWaterTemp(t){const a=e.states[i].attributes.temperature+t;e.callService("water_heater","set_temperature",{entity_id:i,temperature:a})}}}(this.hass,this.config.entity)),e.has("_showPopup")&&this._updatePopupPortal()}_updatePopupPortal(){if(this._popupPortal)if(this._showPopup&&!this.config.disable_popup)this._popupPortal.style.pointerEvents="auto",this._renderPopupToPortal();else{this._popupPortal.style.pointerEvents="none";const e=this._popupPortal.querySelector(".popup-overlay");e&&e.remove()}}_renderPopupToPortal(){const e=this._getRelatedEntities(),t=e.filter(e=>e.entity_id.startsWith("sensor")),i=e.filter(e=>!e.entity_id.startsWith("sensor")),a=document.createElement("div");a.className="popup-overlay",a.addEventListener("click",e=>{e.target===a&&(this._showPopup=!1,this.requestUpdate())});const s=document.createElement("div"),n=!0===this.config?.hide_popup_scrollbar;s.className=n?"popup-content hide-scrollbar":"popup-content",s.addEventListener("click",e=>e.stopPropagation());const r=document.createElement("div");if(r.className="popup-header",r.innerHTML='\n      <div class="popup-drag-handle"></div>\n      <ha-icon class="close-btn" icon="mdi:close"></ha-icon>\n    ',r.querySelector(".close-btn").addEventListener("click",()=>{this._showPopup=!1,this.requestUpdate()}),s.appendChild(r),t.length>0){const e=document.createElement("div");e.className="chips-container",t.forEach(t=>{const i=this._isEntityAvailable(t),a=document.createElement("div");a.className="chip "+(i?"":"chip-unavailable"),a.innerHTML=`\n          <ha-icon icon="${t.attributes.icon||"mdi:information-outline"}"></ha-icon>\n          <span>${i?`${t.state} ${t.attributes.unit_of_measurement||""}`:this._t("unavailable")}</span>\n        `,e.appendChild(a)}),s.appendChild(e)}if(i.length>0){const e=document.createElement("div");e.className="controls-list",i.forEach(t=>{const i=this._createControlCardElement(t);e.appendChild(i)}),s.appendChild(e)}else{const e=document.createElement("div");e.className="no-controls",e.textContent=this._t("no_controls"),s.appendChild(e)}a.appendChild(s);const o=this._popupPortal.querySelector(".popup-overlay");o&&o.remove(),this._popupPortal.appendChild(a)}_createControlCardElement(e){const t=e.entity_id.split(".")[0],i=this._isEntityAvailable(e),a=document.createElement("div");a.className="control-card "+(i?"":"control-card-unavailable");const s=document.createElement("div");s.className="control-header",s.innerHTML=`\n      <ha-icon icon="${e.attributes.icon||ne(t)}"></ha-icon>\n      <span>${e.attributes.friendly_name}</span>\n      ${i?"":`<span class="unavailable-badge">${this._t("unavailable")}</span>`}\n    `;const n=document.createElement("div");return n.className="control-action",i?this._populateControlAction(n,e,t):n.innerHTML=`<span class="state-text unavailable-text">${e.state}</span>`,a.appendChild(s),a.appendChild(n),a}_populateControlAction(e,t,i){!function(e,t,i,a){const s=a.isEntityAvailable(t);switch(i){case"switch":case"input_boolean":{const i=document.createElement("ha-switch");i.checked="on"===t.state,i.disabled=!s,i.addEventListener("change",()=>s&&a.toggle(t.entity_id)),e.appendChild(i);break}case"select":case"input_select":{const i=document.createElement("div");i.className="select-grid",(t.attributes.options||[]).forEach(e=>{const n=document.createElement("div");n.className=`select-opt ${t.state===e?"active":""} ${s?"":"disabled"}`,n.textContent=e,n.addEventListener("click",()=>s&&a.setSelect(t.entity_id,e)),i.appendChild(n)}),e.appendChild(i);break}case"number":case"input_number":{const i=document.createElement("div");i.className="number-control",i.innerHTML=`\n        <button ${s?"":"disabled"}><ha-icon icon="mdi:minus"></ha-icon></button>\n        <span>${t.state}</span>\n        <button ${s?"":"disabled"}><ha-icon icon="mdi:plus"></ha-icon></button>\n      `,i.querySelectorAll("button")[0].addEventListener("click",()=>s&&a.adjustNumber(t.entity_id,-1)),i.querySelectorAll("button")[1].addEventListener("click",()=>s&&a.adjustNumber(t.entity_id,1)),e.appendChild(i);break}case"button":{const i=document.createElement("button");i.className="action-btn",i.disabled=!s,i.innerHTML='<ha-icon icon="mdi:gesture-tap"></ha-icon>',i.addEventListener("click",()=>s&&a.pressButton(t.entity_id)),e.appendChild(i);break}default:e.innerHTML=`<span class="state-text">${t.state}</span>`}}(e,t,i,{toggle:e=>this._toggleEntity(e),setSelect:(e,t)=>this._setSelect(e,t),adjustNumber:(e,t)=>this._adjustNumber(e,t),pressButton:e=>this._pressButton(e),isEntityAvailable:e=>this._isEntityAvailable(e)})}_renderTextPopup(){return N`
       <div class="text-popup-overlay" @click="${()=>this._showTextPopup=!1}">
         <div class="text-popup-content" @click="${e=>e.stopPropagation()}">
           <div class="text-popup-header">
@@ -2928,7 +3058,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
     `}_renderControlCard(e){const t=e.entity_id.split(".")[0],i=this._isEntityAvailable(e);return N`
       <div class="control-card ${i?"":"control-card-unavailable"}">
         <div class="control-header">
-          <ha-icon icon="${e.attributes.icon||se(t)}"></ha-icon>
+          <ha-icon icon="${e.attributes.icon||ne(t)}"></ha-icon>
           <span>${e.attributes.friendly_name}</span>
           ${i?"":N`<span class="unavailable-badge">${this._t("unavailable")}</span>`}
         </div>
@@ -2939,17 +3069,17 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
           `}
         </div>
       </div>
-    `}_renderControlAction(e,t){return function(e,t,i){const{html:a,toggle:n,setSelect:s,adjustNumber:r,pressButton:o,isEntityAvailable:c}=e,l=c(t);switch(i){case"switch":case"input_boolean":return a`
+    `}_renderControlAction(e,t){return function(e,t,i){const{html:a,toggle:s,setSelect:n,adjustNumber:r,pressButton:o,isEntityAvailable:c}=e,l=c(t);switch(i){case"switch":case"input_boolean":return a`
         <ha-switch 
           .checked="${"on"===t.state}"
           .disabled="${!l}"
-          @change="${()=>l&&n(t.entity_id)}">
+          @change="${()=>l&&s(t.entity_id)}">
         </ha-switch>
       `;case"select":case"input_select":return a`
         <div class="select-grid">
           ${(t.attributes.options||[]).map(e=>a`
             <div class="select-opt ${t.state===e?"active":""} ${l?"":"disabled"}" 
-                 @click="${()=>l&&s(t.entity_id,e)}">
+                 @click="${()=>l&&n(t.entity_id,e)}">
               ${e}
             </div>
           `)}
@@ -2968,9 +3098,9 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
         <button class="action-btn" ?disabled="${!l}" @click="${()=>l&&o(t.entity_id)}">
           <ha-icon icon="mdi:gesture-tap"></ha-icon>
         </button>
-      `;default:return a`<span class="state-text">${t.state}</span>`}}({html:N,toggle:e=>this._toggleEntity(e),setSelect:(e,t)=>this._setSelect(e,t),adjustNumber:(e,t)=>this._adjustNumber(e,t),pressButton:e=>this._pressButton(e),isEntityAvailable:e=>this._isEntityAvailable(e)},e,t)}_setFanPresetMode(e){this._services?.setFanPresetMode(e)}_getVacuumStateText(e){return this._t(e)||e}_toggleEntity(e=this.config.entity){this._services?.toggle(e)}_callService(e,t){this._services?.callService(e,t)}_isMusicAssistant(e){return e&&e.attributes&&null!=e.attributes.mass_player_type}_hasMassQueue(){return null!=this.hass?.services?.music_assistant?.get_queue}_normalizeQueueItem(e){if(!e)return null;const t=e.media_item||e,i=t.artists,a=Array.isArray(i)&&i.length?i.map(e=>e?.name).filter(Boolean).join(", "):"";return{queue_item_id:e.queue_item_id,name:e.name||t?.name,media_title:e.name||t?.name,media_artist:a,media_album_name:t?.album?.name,media_image:t?.image,uri:t?.uri,media_item:t}}async _fetchMassQueue(){if(!this.config?.entity)return;this._massQueueLoading=!0,this._massQueueItems=[],this.requestUpdate("_massQueueLoading"),this.requestUpdate("_massQueueItems");const e=this.config.entity;try{let t=null;const i={entity_id:e},a={entity_id:e};if(this.hass?.connection&&"function"==typeof this.hass.connection.sendMessagePromise){const e=await this.hass.connection.sendMessagePromise({type:"call_service",domain:"music_assistant",service:"get_queue",service_data:a,target:i,return_response:!0});t=e?.result?.response??e?.response??e?.result}if(null==t&&"function"==typeof this.hass?.callService){const e=await this.hass.callService("music_assistant","get_queue",a,i,!0);t=e?.response??e?.result??e}const n=[];if(t&&"object"==typeof t){const i=t[e]||t;i&&"object"==typeof i&&(Array.isArray(i.items)?i.items.forEach(e=>{const t=this._normalizeQueueItem(e);t&&n.push(t)}):[i.current_item,i.next_item].forEach(e=>{const t=this._normalizeQueueItem(e);t&&n.push(t)}))}this._massQueueItems=n}catch(e){this._massQueueItems=[]}this._massQueueLoading=!1,this.requestUpdate("_massQueueItems"),this.requestUpdate("_massQueueLoading")}_toggleMassQueueExpand(){this._massQueueExpanded=!this._massQueueExpanded,this._massQueueExpanded&&0===this._massQueueItems.length&&!this._massQueueLoading&&this._fetchMassQueue(),this.requestUpdate("_massQueueExpanded")}_playMassQueueItem(e){if(!this.hass||!this.config?.entity)return;const t="string"==typeof e?null:e?.uri||e?.media_item?.uri;t&&this.hass.callService("music_assistant","play_media",{entity_id:this.config.entity,media_id:[t],media_type:"track"})}_hasMusicAssistantLibrary(){return null!=this.hass?.services?.music_assistant?.get_library}async _getMassConfigEntryId(){if(this.config?.mass_config_entry_id)return this.config.mass_config_entry_id;const e=this.config?.entity,t=this.hass?.entities?.[e];if(t?.config_entry_id)return t.config_entry_id;if("function"==typeof this.hass?.callApi)try{const e=await this.hass.callApi("GET","config/config_entries/entry"),t=(Array.isArray(e)?e:[]).find(e=>"music_assistant"===e?.domain&&"loaded"===e?.state);if(t?.entry_id)return t.entry_id}catch(e){}return null}async _fetchMassLibrary(){if(this.config?.entity){this._massLibraryLoading=!0,this._massLibraryItems=[],this.requestUpdate("_massLibraryLoading"),this.requestUpdate("_massLibraryItems");try{const e=await this._getMassConfigEntryId();if(!e)return void(this._massLibraryItems=[]);const t=[],i=["artist","album","playlist","track"],a={config_entry_id:e,limit:30},n=async e=>{const t={...a,media_type:e};if(this.hass?.connection&&"function"==typeof this.hass.connection.sendMessagePromise){const i=await this.hass.connection.sendMessagePromise({type:"call_service",domain:"music_assistant",service:"get_library",service_data:t,return_response:!0}),a=i?.result?.response??i?.response??i?.result,n=a?.items??(Array.isArray(a)?a:[]);return Array.isArray(n)?n.map(t=>({...t,media_type:e})):[]}if("function"==typeof this.hass?.callService){const i=await this.hass.callService("music_assistant","get_library",t,{},!0),a=i?.response??i?.result??i,n=a?.items??(Array.isArray(a)?a:[]);return Array.isArray(n)?n.map(t=>({...t,media_type:e})):[]}return[]};for(const e of i)try{const i=await n(e);t.push(...i)}catch(e){}this._massLibraryItems=t}catch(e){this._massLibraryItems=[]}finally{this._massLibraryLoading=!1,this.requestUpdate("_massLibraryItems"),this.requestUpdate("_massLibraryLoading")}}}_toggleMassLibraryExpand(){this._massLibraryExpanded=!this._massLibraryExpanded,this._massLibraryExpanded&&0===this._massLibraryItems.length&&!this._massLibraryLoading&&this._fetchMassLibrary(),this.requestUpdate("_massLibraryExpanded")}_playMassLibraryItem(e){this.hass&&this.config?.entity&&e?.uri&&this.hass.callService("music_assistant","play_media",{entity_id:this.config.entity,media_id:[e.uri],media_type:e.media_type||"track"})}_hasMusicAssistantSearch(){return null!=this.hass?.services?.music_assistant?.search}async _fetchMassSearch(e){const t=(e||"").trim();if(t&&this.config?.entity){this._massSearchLoading=!0,this._massSearchResults={artists:[],albums:[],tracks:[]},this.requestUpdate("_massSearchLoading"),this.requestUpdate("_massSearchResults");try{const e=await this._getMassConfigEntryId();if(!e)return void(this._massSearchResults={artists:[],albums:[],tracks:[]});const i={config_entry_id:e,name:t};let a=null;if(this.hass?.connection&&"function"==typeof this.hass.connection.sendMessagePromise){const e=await this.hass.connection.sendMessagePromise({type:"call_service",domain:"music_assistant",service:"search",service_data:i,return_response:!0});a=e?.result?.response??e?.response??e?.result}if(null==a&&"function"==typeof this.hass?.callService){const e=await this.hass.callService("music_assistant","search",i,{},!0);a=e?.response??e?.result??e}const n=Array.isArray(a?.artists)?a.artists:[],s=Array.isArray(a?.albums)?a.albums:[],r=Array.isArray(a?.tracks)?a.tracks:[];this._massSearchResults={artists:n,albums:s,tracks:r}}catch(e){this._massSearchResults={artists:[],albums:[],tracks:[]}}finally{this._massSearchLoading=!1,this.requestUpdate("_massSearchResults"),this.requestUpdate("_massSearchLoading")}}}_toggleMassSearchExpand(){this._massSearchExpanded=!this._massSearchExpanded,this._massSearchExpanded||(this._massSearchQuery="",this._massSearchResults={artists:[],albums:[],tracks:[]}),this.requestUpdate("_massSearchExpanded"),this.requestUpdate("_massSearchQuery"),this.requestUpdate("_massSearchResults")}_onMassSearchInput(e){this._massSearchQuery=e?.target?.value??"",this.requestUpdate("_massSearchQuery")}_runMassSearch(){const e=(this._massSearchQuery||"").trim();e&&this._fetchMassSearch(e)}_showMassPlaylistOrLibrary(e){return this._isMusicAssistant(e)&&(this._hasMassQueue()||this._hasMusicAssistantLibrary()||this._hasMusicAssistantSearch())}_setSelect(e,t){this._services?.setSelect(e,t)}_adjustNumber(e,t){this._services?.adjustNumber(e,t)}_pressButton(e){this._services?.pressButton(e)}_openMoreInfo(){this.dispatchEvent(new CustomEvent("hass-more-info",{bubbles:!0,composed:!0,detail:{entityId:this.config.entity}}))}_fireHaptic(e="medium"){"undefined"!=typeof navigator&&navigator.vibrate&&navigator.vibrate("heavy"===e?[20,40,20]:[15,30,15]),this.dispatchEvent(new CustomEvent("haptic",{bubbles:!0,composed:!0,detail:{type:e}}))}_onIconPointerDown(e){this._iconLongPressFired=!1,this._iconLongPressTarget=e.currentTarget,this._iconLongPressTimer=setTimeout(()=>{this._iconLongPressTimer=null,this._iconLongPressFired=!0,this._fireHaptic("medium"),this._iconLongPressTarget&&(this._iconLongPressTarget.classList.add("icon-longpress-active"),setTimeout(()=>{this._iconLongPressTarget&&this._iconLongPressTarget.classList.remove("icon-longpress-active")},200)),this._openMoreInfo()},500)}_onIconPointerUp(){if(this._iconLongPressTimer&&(clearTimeout(this._iconLongPressTimer),this._iconLongPressTimer=null),this._iconLongPressTarget=null,this._iconLongPressFired)return void(this._iconLongPressFired=!1);const e=Date.now();if(this._iconLastTapTime&&e-this._iconLastTapTime<400)return this._iconLastTapTime=0,this._fireHaptic("light"),void this._openMoreInfo();this._iconLastTapTime=e,this._toggleEntity()}_onIconPointerLeave(){this._iconLongPressTimer&&(clearTimeout(this._iconLongPressTimer),this._iconLongPressTimer=null),this._iconLongPressTarget=null}_renderHeaderIcon(e,t=!1){if(!e)return"";const i=this._getDeviceType(),a=e.attributes?.icon||se(i),n=le(i,e.state),s="var(--ha-card-background)"!==n&&n.startsWith("rgba")?n.replace(/[\d.]+\)$/,"1)"):"";return N`
+      `;default:return a`<span class="state-text">${t.state}</span>`}}({html:N,toggle:e=>this._toggleEntity(e),setSelect:(e,t)=>this._setSelect(e,t),adjustNumber:(e,t)=>this._adjustNumber(e,t),pressButton:e=>this._pressButton(e),isEntityAvailable:e=>this._isEntityAvailable(e)},e,t)}_setFanPresetMode(e){this._services?.setFanPresetMode(e)}_getVacuumStateText(e){return this._t(e)||e}_toggleEntity(e=this.config.entity){this._services?.toggle(e)}_callService(e,t){this._services?.callService(e,t)}_isMusicAssistant(e){return e&&e.attributes&&null!=e.attributes.mass_player_type}_hasMassQueue(){return null!=this.hass?.services?.mass_queue?.get_queue_items}_normalizeMassQueueItem(e){return e?{queue_item_id:e.queue_item_id,name:e.media_title,media_title:e.media_title,media_artist:e.media_artist,media_album_name:e.media_album_name,media_image:e.media_image,media_content_id:e.media_content_id,uri:e.media_content_id}:null}async _fetchMassQueue(){if(!this.config?.entity)return;this._massQueueLoading=!0,this._massQueueItems=[],this.requestUpdate("_massQueueLoading"),this.requestUpdate("_massQueueItems");const e=this.config.entity;try{const t={entity:e,limit_before:5,limit_after:100};let i=null;if(this.hass?.connection&&"function"==typeof this.hass.connection.sendMessagePromise){const e=await this.hass.connection.sendMessagePromise({type:"call_service",domain:"mass_queue",service:"get_queue_items",service_data:t,return_response:!0});i=e?.result?.response??e?.response??e?.result}if(null==i&&"function"==typeof this.hass?.callService){const e=await this.hass.callService("mass_queue","get_queue_items",t,{},!0);i=e?.response??e?.result??e}const a=[];if(i&&"object"==typeof i){const t=i[e]||(Array.isArray(i)?i:null);Array.isArray(t)&&t.forEach(e=>{const t=this._normalizeMassQueueItem(e);t&&a.push(t)})}this._massQueueItems=a}catch(e){this._massQueueItems=[]}this._massQueueLoading=!1,this.requestUpdate("_massQueueItems"),this.requestUpdate("_massQueueLoading")}_toggleMassQueueExpand(){this._massQueueExpanded=!this._massQueueExpanded,this._massQueueExpanded&&0===this._massQueueItems.length&&!this._massQueueLoading&&this._fetchMassQueue(),this.requestUpdate("_massQueueExpanded")}_playMassQueueItem(e){if(!this.hass||!this.config?.entity)return;const t="string"==typeof e?null:e?.uri||e?.media_content_id||e?.media_item?.uri;t&&this.hass.callService("music_assistant","play_media",{entity_id:this.config.entity,media_id:[t],media_type:"track"})}_hasMusicAssistantLibrary(){return null!=this.hass?.services?.music_assistant?.get_library}async _getMassConfigEntryId(){if(this.config?.mass_config_entry_id)return this.config.mass_config_entry_id;const e=this.config?.entity,t=this.hass?.entities?.[e];if(t?.device_id){const e=this.hass?.devices?.[t.device_id],i=e?.config_entries?.[0];if(i)return i}if("function"==typeof this.hass?.callApi)try{const e=await this.hass.callApi("GET","config/config_entries/entry"),t=(Array.isArray(e)?e:[]).find(e=>"music_assistant"===e?.domain&&"loaded"===e?.state);if(t?.entry_id)return t.entry_id}catch(e){}return null}async _fetchMassLibrary(){if(this.config?.entity){this._massLibraryLoading=!0,this._massLibraryItems=[],this.requestUpdate("_massLibraryLoading"),this.requestUpdate("_massLibraryItems");try{const e=await this._getMassConfigEntryId();if(!e)return void(this._massLibraryItems=[]);const t=[],i=["artist","album","playlist","track"],a={config_entry_id:e,limit:50,order_by:"last_played_desc"},s=async e=>{const t={...a,media_type:e};if(this.hass?.connection&&"function"==typeof this.hass.connection.sendMessagePromise){const i=await this.hass.connection.sendMessagePromise({type:"call_service",domain:"music_assistant",service:"get_library",service_data:t,return_response:!0}),a=i?.result?.response??i?.response??i?.result,s=a?.items??(Array.isArray(a)?a:[]);return Array.isArray(s)?s.map(t=>({...t,media_type:e})):[]}if("function"==typeof this.hass?.callService){const i=await this.hass.callService("music_assistant","get_library",t,{},!0),a=i?.response??i?.result??i,s=a?.items??(Array.isArray(a)?a:[]);return Array.isArray(s)?s.map(t=>({...t,media_type:e})):[]}return[]};for(const e of i)try{const i=await s(e);t.push(...i)}catch(e){}this._massLibraryItems=t}catch(e){this._massLibraryItems=[]}finally{this._massLibraryLoading=!1,this.requestUpdate("_massLibraryItems"),this.requestUpdate("_massLibraryLoading")}}}_toggleMassLibraryExpand(){this._massLibraryExpanded=!this._massLibraryExpanded,this._massLibraryExpanded&&0===this._massLibraryItems.length&&!this._massLibraryLoading&&this._fetchMassLibrary(),this.requestUpdate("_massLibraryExpanded")}_playMassLibraryItem(e){this.hass&&this.config?.entity&&e?.uri&&this.hass.callService("music_assistant","play_media",{entity_id:this.config.entity,media_id:[e.uri],media_type:e.media_type||"track"})}_hasMusicAssistantSearch(){return null!=this.hass?.services?.music_assistant?.search}async _fetchMassSearch(e){const t=(e||"").trim();if(t&&this.config?.entity){this._massSearchLoading=!0,this._massSearchResults={artists:[],albums:[],tracks:[],playlists:[],podcasts:[]},this.requestUpdate("_massSearchLoading"),this.requestUpdate("_massSearchResults");try{const e=await this._getMassConfigEntryId();if(!e)return void(this._massSearchResults={artists:[],albums:[],tracks:[],playlists:[],podcasts:[]});const i={config_entry_id:e,name:t,limit:50};let a=null;if(this.hass?.connection&&"function"==typeof this.hass.connection.sendMessagePromise){const e=await this.hass.connection.sendMessagePromise({type:"call_service",domain:"music_assistant",service:"search",service_data:i,return_response:!0});a=e?.result?.response??e?.response??e?.result}if(null==a&&"function"==typeof this.hass?.callService){const e=await this.hass.callService("music_assistant","search",i,{},!0);a=e?.response??e?.result??e}const s=Array.isArray(a?.artists)?a.artists:[],n=Array.isArray(a?.albums)?a.albums:[],r=Array.isArray(a?.tracks)?a.tracks:[],o=Array.isArray(a?.playlists)?a.playlists:Array.isArray(a?.playlist)?a.playlist:[],c=Array.isArray(a?.podcasts)?a.podcasts:Array.isArray(a?.podcast)?a.podcast:[];this._massSearchResults={artists:s,albums:n,tracks:r,playlists:o,podcasts:c},t&&this._addToSearchHistory(t)}catch(e){this._massSearchResults={artists:[],albums:[],tracks:[],playlists:[],podcasts:[]}}finally{this._massSearchLoading=!1,this.requestUpdate("_massSearchResults"),this.requestUpdate("_massSearchLoading")}}}_toggleMassSearchExpand(){this._massSearchExpanded=!this._massSearchExpanded,this._massSearchExpanded||(this._massSearchQuery="",this._massSearchResults={artists:[],albums:[],tracks:[],playlists:[],podcasts:[]},this._massSearchSuggestionsOpen=!1),this.requestUpdate("_massSearchExpanded"),this.requestUpdate("_massSearchQuery"),this.requestUpdate("_massSearchResults"),this.requestUpdate("_massSearchSuggestionsOpen")}_onMassSearchInput(e){this._massSearchQuery=e?.target?.value??"",this.requestUpdate("_massSearchQuery")}_loadSearchHistory(){try{const e=localStorage.getItem("universal-device-card-search-history"),t=e?JSON.parse(e):[];this._massSearchHistory=Array.isArray(t)?t.slice(0,20):[]}catch(e){this._massSearchHistory=[]}}_addToSearchHistory(e){const t=(e||"").trim();if(!t)return;const i=[...this._massSearchHistory],a=i.indexOf(t);a>=0&&i.splice(a,1),i.unshift(t),this._massSearchHistory=i.slice(0,20);try{localStorage.setItem("universal-device-card-search-history",JSON.stringify(this._massSearchHistory))}catch(e){}this.requestUpdate("_massSearchHistory")}_getFilteredSearchHistory(){const e=(this._massSearchQuery||"").trim().toLowerCase();return e?this._massSearchHistory.filter(t=>t.toLowerCase().includes(e)).slice(0,10):this._massSearchHistory.slice(0,10)}_openSearchSuggestions(){this._massSearchSuggestionsOpen=!0,this.requestUpdate("_massSearchSuggestionsOpen")}_closeSearchSuggestions(){this._massSearchSuggestionsOpen=!1,this.requestUpdate("_massSearchSuggestionsOpen")}_selectSearchHistoryItem(e){this._massSearchQuery=e,this._closeSearchSuggestions(),this.requestUpdate("_massSearchQuery"),this._runMassSearch()}_runMassSearch(){const e=(this._massSearchQuery||"").trim();e&&this._fetchMassSearch(e)}_onMassScrollDragStart(e){if(e.target.closest(".mass-library-chip"))return;const t=e.currentTarget;if(!t)return;e.preventDefault(),this._massScrollDrag={el:t,startX:e.clientX,startScrollLeft:t.scrollLeft};const i=e=>{this._massScrollDrag&&(this._massScrollDrag.el.scrollLeft=this._massScrollDrag.startScrollLeft+this._massScrollDrag.startX-e.clientX)},a=()=>{this._massScrollDrag=null,document.removeEventListener("mousemove",i),document.removeEventListener("mouseup",a)};document.addEventListener("mousemove",i),document.addEventListener("mouseup",a)}_showMassPlaylistOrLibrary(e){return this._isMusicAssistant(e)&&(this._hasMassQueue()||this._hasMusicAssistantLibrary()||this._hasMusicAssistantSearch())}_setSelect(e,t){this._services?.setSelect(e,t)}_adjustNumber(e,t){this._services?.adjustNumber(e,t)}_pressButton(e){this._services?.pressButton(e)}_openMoreInfo(){this.dispatchEvent(new CustomEvent("hass-more-info",{bubbles:!0,composed:!0,detail:{entityId:this.config.entity}}))}_fireHaptic(e="medium"){"undefined"!=typeof navigator&&navigator.vibrate&&navigator.vibrate("heavy"===e?[20,40,20]:[15,30,15]),this.dispatchEvent(new CustomEvent("haptic",{bubbles:!0,composed:!0,detail:{type:e}}))}_onIconPointerDown(e){this._iconLongPressFired=!1,this._iconLongPressTarget=e.currentTarget,this._iconLongPressTimer=setTimeout(()=>{this._iconLongPressTimer=null,this._iconLongPressFired=!0,this._fireHaptic("medium"),this._iconLongPressTarget&&(this._iconLongPressTarget.classList.add("icon-longpress-active"),setTimeout(()=>{this._iconLongPressTarget&&this._iconLongPressTarget.classList.remove("icon-longpress-active")},200)),this._openMoreInfo()},500)}_onIconPointerUp(){if(this._iconLongPressTimer&&(clearTimeout(this._iconLongPressTimer),this._iconLongPressTimer=null),this._iconLongPressTarget=null,this._iconLongPressFired)return void(this._iconLongPressFired=!1);const e=Date.now();if(this._iconLastTapTime&&e-this._iconLastTapTime<400)return this._iconLastTapTime=0,this._fireHaptic("light"),void this._openMoreInfo();this._iconLastTapTime=e,this._toggleEntity()}_onIconPointerLeave(){this._iconLongPressTimer&&(clearTimeout(this._iconLongPressTimer),this._iconLongPressTimer=null),this._iconLongPressTarget=null}_renderHeaderIcon(e,t=!1){if(!e)return"";const i=this._getDeviceType(),a=e.attributes?.icon||ne(i),s=le(i,e.state),n="var(--ha-card-background)"!==s&&s.startsWith("rgba")?s.replace(/[\d.]+\)$/,"1)"):"";return N`
       <div class="header-icon ${t?"header-icon-mini":""} entity-icon-action"
-           style="${s?`color: ${s}`:""}"
+           style="${n?`color: ${n}`:""}"
            @pointerdown="${e=>this._onIconPointerDown(e)}"
            @pointerup="${this._onIconPointerUp.bind(this)}"
            @pointerleave="${this._onIconPointerLeave.bind(this)}"
@@ -2979,7 +3109,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
            title="${this._t("device")}">
         <ha-icon icon="${a}"></ha-icon>
       </div>
-    `}_renderBarIcon(e,t=""){if(!e)return"";const i=this._getDeviceType(),a=e.attributes?.icon||se(i);return N`
+    `}_renderBarIcon(e,t=""){if(!e)return"";const i=this._getDeviceType(),a=e.attributes?.icon||ne(i);return N`
       <div class="bar-icon entity-icon-action ${t}"
            @pointerdown="${e=>this._onIconPointerDown(e)}"
            @pointerup="${this._onIconPointerUp.bind(this)}"
@@ -2995,7 +3125,7 @@ const e="undefined"!=typeof window&&null!=window.customElements&&void 0!==window
            title="${this._t("device")}">
         <ha-icon icon="mdi:tune-variant"></ha-icon>
       </div>
-    `:""}_handleSliderClick(e,t){const i=e.currentTarget.getBoundingClientRect(),a=e.clientX-i.left,n=Math.round(a/i.width*100),s=Math.max(0,Math.min(100,n));switch(t){case"light":this._setBrightness(s);break;case"cover":this._setCoverPosition(s);break;case"media":this._setVolume(s);break;case"fan":this._setFanSpeed(s)}}_adjustTemp(e){this._services?.adjustTemp(e)}_setClimateMode(e){this._services?.setClimateMode(e)}_setFanMode(e){this._services?.setFanMode(e)}_setBrightness(e){this._services?.setBrightness(e)}_adjustBrightness(e){const t=this.hass.states[this.config.entity].attributes.brightness||0,i=Math.round(t/255*100),a=Math.max(0,Math.min(100,i+e));this._setBrightness(a)}_setFanSpeed(e){this._services?.setFanSpeed(e)}_adjustFanSpeed(e){const t=this.hass.states[this.config.entity].attributes.percentage||0,i=Math.max(0,Math.min(100,t+e));this._setFanSpeed(i)}_setCoverPosition(e){this._services?.setCoverPosition(e)}_adjustCoverPosition(e){const t=this.hass.states[this.config.entity].attributes.current_position||0,i=Math.max(0,Math.min(100,t+e));this._setCoverPosition(i)}_adjustCoverTiltPosition(e){const t=this.hass.states[this.config.entity].attributes.current_tilt_position??50,i=Math.max(0,Math.min(100,t+e));this._services?.setCoverTiltPosition(i)}_setVolume(e){this._services?.setVolume(e)}_adjustVolume(e){const t=100*(this.hass.states[this.config.entity].attributes.volume_level||0),i=Math.max(0,Math.min(100,t+e));this._setVolume(i)}_adjustWaterTemp(e){this._services?.adjustWaterTemp(e)}setConfig(e){if(!e.entity)throw new Error("?ｇ????entity");this.config=e}static get styles(){return[ae,ne]}}),customElements.define("universal-device-card-editor",class extends ee{static get properties(){return{hass:{},config:{},_translations:{type:Object}}}constructor(){super(),this._translations={}}async connectedCallback(){super.connectedCallback(),await this._loadTranslations()}async _loadTranslations(){const e=this.hass?.language||"en",t={"zh-Hant":"zh-TW"}[e]||e;this._translations=ie[t]||ie[e]||ie.en;try{const i=te();let a=await fetch(`${i}${e}.json`);if(a.ok||e===t||(a=await fetch(`${i}${t}.json`)),a.ok){const e=await a.json();this._translations={...this._translations,...e}}}catch(e){}this.requestUpdate()}_t(e){return this._translations[e]||ie.en[e]||e}setConfig(e){this.config=e}configChanged(e){const t=new Event("config-changed",{bubbles:!0,composed:!0});t.detail={config:e},this.dispatchEvent(t)}_valueChanged(e){const t=e.target,i=t.configValue,a=void 0!==t.checked?t.checked:t.value;if(this.config[i]===a)return;const n={...this.config};""===a||"checkbox"===t.type&&!a?delete n[i]:n[i]=a,this.configChanged(n)}_showButtonsChanged(e){const t=e.target.value,i={...this.config};""===t?delete i.show_buttons:i.show_buttons=t.split(",").map(e=>e.trim()).filter(e=>e),this.configChanged(i)}_filterChanged(e){const t=e.target,i=t.getAttribute("filter-type"),a=t.value,n={...this.config};n.popup_filters||(n.popup_filters={}),""===a?delete n.popup_filters[i]:n.popup_filters[i]=a.split(",").map(e=>e.trim()).filter(e=>e),this.configChanged(n)}render(){if(!this.hass||!this.config)return N``;const e=Object.keys(this.hass.states).filter(e=>{const t=e.split(".")[0];return["climate","light","fan","cover","humidifier","media_player","vacuum","water_heater"].includes(t)}),t=this.config.popup_filters||{};return N`
+    `:""}_handleSliderClick(e,t){const i=e.currentTarget.getBoundingClientRect(),a=e.clientX-i.left,s=Math.round(a/i.width*100),n=Math.max(0,Math.min(100,s));switch(t){case"light":this._setBrightness(n);break;case"cover":this._setCoverPosition(n);break;case"media":this._setVolume(n);break;case"fan":this._setFanSpeed(n)}}_adjustTemp(e){this._services?.adjustTemp(e)}_setClimateMode(e){this._services?.setClimateMode(e)}_setFanMode(e){this._services?.setFanMode(e)}_setBrightness(e){this._services?.setBrightness(e)}_adjustBrightness(e){const t=this.hass.states[this.config.entity].attributes.brightness||0,i=Math.round(t/255*100),a=Math.max(0,Math.min(100,i+e));this._setBrightness(a)}_setFanSpeed(e){this._services?.setFanSpeed(e)}_adjustFanSpeed(e){const t=this.hass.states[this.config.entity].attributes.percentage||0,i=Math.max(0,Math.min(100,t+e));this._setFanSpeed(i)}_setCoverPosition(e){this._services?.setCoverPosition(e)}_adjustCoverPosition(e){const t=this.hass.states[this.config.entity].attributes.current_position||0,i=Math.max(0,Math.min(100,t+e));this._setCoverPosition(i)}_adjustCoverTiltPosition(e){const t=this.hass.states[this.config.entity].attributes.current_tilt_position??50,i=Math.max(0,Math.min(100,t+e));this._services?.setCoverTiltPosition(i)}_setVolume(e){this._services?.setVolume(e)}_adjustVolume(e){const t=100*(this.hass.states[this.config.entity].attributes.volume_level||0),i=Math.max(0,Math.min(100,t+e));this._setVolume(i)}_adjustWaterTemp(e){this._services?.adjustWaterTemp(e)}setConfig(e){if(!e.entity)throw new Error("?ｇ????entity");this.config=e}static get styles(){return[ae,se]}}),customElements.define("universal-device-card-editor",class extends ee{static get properties(){return{hass:{},config:{},_translations:{type:Object}}}constructor(){super(),this._translations={}}async connectedCallback(){super.connectedCallback(),await this._loadTranslations()}async _loadTranslations(){const e=this.hass?.language||"en",t={"zh-Hant":"zh-TW"}[e]||e;this._translations=ie[t]||ie[e]||ie.en;try{const i=te();let a=await fetch(`${i}${e}.json`);if(a.ok||e===t||(a=await fetch(`${i}${t}.json`)),a.ok){const e=await a.json();this._translations={...this._translations,...e}}}catch(e){}this.requestUpdate()}_t(e){return this._translations[e]||ie.en[e]||e}setConfig(e){this.config=e}configChanged(e){const t=new Event("config-changed",{bubbles:!0,composed:!0});t.detail={config:e},this.dispatchEvent(t)}_valueChanged(e){const t=e.target,i=t.configValue,a=void 0!==t.checked?t.checked:t.value;if(this.config[i]===a)return;const s={...this.config};""===a||"checkbox"===t.type&&!a?delete s[i]:s[i]=a,this.configChanged(s)}_showButtonsChanged(e){const t=e.target.value,i={...this.config};""===t?delete i.show_buttons:i.show_buttons=t.split(",").map(e=>e.trim()).filter(e=>e),this.configChanged(i)}_filterChanged(e){const t=e.target,i=t.getAttribute("filter-type"),a=t.value,s={...this.config};s.popup_filters||(s.popup_filters={}),""===a?delete s.popup_filters[i]:s.popup_filters[i]=a.split(",").map(e=>e.trim()).filter(e=>e),this.configChanged(s)}render(){if(!this.hass||!this.config)return N``;const e=Object.keys(this.hass.states).filter(e=>{const t=e.split(".")[0];return["climate","light","fan","cover","humidifier","media_player","vacuum","water_heater"].includes(t)}),t=this.config.popup_filters||{};return N`
       <div class="card-config">
         <div class="option">
           <label>
