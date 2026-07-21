@@ -1,12 +1,23 @@
 {
   "name": "universal-device-card",
-  "version": "2.1.0",
-  "description": "Universal Device Card for Home Assistant",
+  "version": "2.6.2",
+  "description": "Universal Device Card for Home Assistant — climate, light, fan, cover, media player, vacuum and more",
   "type": "module",
   "scripts": {
     "build": "rollup -c && node scripts/copy-translations.cjs",
     "dev": "rollup -c -w"
   },
+  "keywords": [
+    "home-assistant",
+    "hacs",
+    "lovelace",
+    "custom-card"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/n71154plus/universal-device-card.git"
+  },
+  "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-alias": "^5.0.0",

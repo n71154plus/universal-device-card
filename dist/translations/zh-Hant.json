@@ -54,5 +54,10 @@
   "mass_search": "搜尋",
   "mass_search_placeholder": "藝人、專輯或曲目…",
   "mass_search_loading": "載入中…",
-  "mass_search_button": "搜尋"
+  "mass_search_button": "搜尋",
+  "fan_speed": "風速",
+  "popup_sensors": "感測數據",
+  "popup_controls": "控制項目",
+  "editor_animations": "啟用動畫",
+  "editor_performance_mode": "效能模式（關閉動畫）"
 }

@@ -1,38 +1,74 @@
 # Universal Device Card
 
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![GitHub release](https://img.shields.io/github/release/n71154plus/universal-device-card.svg)](https://github.com/n71154plus/universal-device-card/releases)
+
 Home Assistant 通用裝置卡片，支援多種裝置類型（climate、light、fan、cover、humidifier、media_player、vacuum、water_heater、generic）與彈出層控制。
 
-## 預覽
-
-![Universal Device Card 預覽](docs/screenshot.png)
-
-> 上圖為佔位。建議將卡片實際畫面截圖存成 `docs/screenshot.png` 後替換，於 HACS 商店中顯示真實預覽。
+目前釋出版本：**v2.6.2**
 
 ## 透過 HACS 安裝（推薦）
 
 1. 確認已安裝 [HACS](https://hacs.xyz/)。
-2. 在 HACS → **前端** → 右上角 **⋮** → **自訂儲存庫**，新增此儲存庫 URL，類型選 **Lovelace**（Dashboard）。
-3. 在 HACS 前端清單中找到 **Universal Device Card**，點擊安裝。
-4. 在 Lovelace 設定 → **儀表板** → **資源** 中新增：
-   - **URL**：`/hacsfiles/universal-device-card/dist/universal-device-card.js`
-   - **類型**：JavaScript Module
-5. 重新載入前端後，在儀表板中新增卡片，類型選擇 **Universal Device Card** 並設定實體。
+2. 在 HACS → **前端** → 右上角 **⋮** → **自訂儲存庫**，新增：
+   - **URL**：`https://github.com/n71154plus/universal-device-card`
+   - **類型**：Dashboard（Lovelace）
+3. 在 HACS 前端清單中找到 **Universal Device Card**，點擊下載／安裝。
+4. 重新載入 Home Assistant 前端。
+5. 在儀表板中新增卡片，類型選擇 **Universal Device Card** 並設定實體。
 
-更多設定說明見 [info.md](info.md)。
+資源路徑（HACS 通常會自動加入）：
+
+```text
+/hacsfiles/universal-device-card/universal-device-card.js
+```
+
+類型請選 **JavaScript Module**。
+
+## 手動安裝
+
+1. 下載最新 [Release](https://github.com/n71154plus/universal-device-card/releases) 中的 `dist/` 內容。
+2. 放到 `config/www/universal-device-card/`（需包含 `universal-device-card.js` 與 `translations/`）。
+3. 在 Lovelace 資源新增：
+
+```text
+/local/universal-device-card/universal-device-card.js
+```
+
+類型：JavaScript Module。
+
+## 設定範例
+
+```yaml
+type: custom:universal-device-card
+entity: climate.living_room
+layout: standard   # standard | mini | bar
+language: auto     # auto | en | zh-TW | zh-CN | ja
+disable_popup: false
+animations: true
+performance_mode: false
+```
+
+### 常用選項
+
+| 選項 | 說明 |
+|------|------|
+| `entity` | 主要裝置實體（必填） |
+| `layout` | 版面：`standard` / `mini` / `bar` |
+| `language` | 介面語言 |
+| `disable_popup` | 停用彈出層 |
+| `animations` | 啟用動畫 |
+| `performance_mode` | 效能模式（關閉動畫） |
+| `show_buttons` | 主畫面顯示的 button 實體 ID 列表 |
+
+更多說明見 [info.md](info.md)。
 
 ## 開發與建置
 
-- **開發**：請在 `src/` 目錄下修改程式；各裝置類型與控制動作已拆成模組，便於維護與擴充。
-- **建置**：執行 `npm run build` 會以 Rollup 將 `src/index.js` 打包成單一 JS 檔，並將 `translations/` 複製到 `dist/translations/`。
-- **輸出**：建置產物為 `dist/universal-device-card.js` 與 `dist/translations/`。上傳至 HACS 或 GitHub 時請包含整個 `dist/` 目錄。
+- 釋出產物在 `dist/`（含 `universal-device-card.js` 與 `translations/`）。
+- `src/` 為模組化原始碼參考；目前 **HACS 釋出以 `dist/` 為準**。
+- 若要從模組原始碼重建：`npm install && npm run build`（會覆寫 `dist/`）。
 
-## 手動部署（非 HACS）
+## 授權
 
-- 將 `dist/` 目錄整個複製到 Home Assistant 的 `www/`（例如 `config/www/universal-device-card/`），並在 Lovelace 資源中加入：
-  - URL：`/local/universal-device-card/universal-device-card.js`
-  - 類型：JavaScript Module
-
-## 指令
-
-- `npm run build` — 建置至 `dist/`（含卡片與翻譯檔）
-- `npm run dev` — 監聽變更並持續建置（可選，方便本地除錯）
+MIT
