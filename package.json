@@ -1,6 +1,6 @@
 {
   "name": "universal-device-card",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "description": "Universal Device Card for Home Assistant — climate, light, fan, cover, media player, vacuum and more",
   "type": "module",
   "scripts": {

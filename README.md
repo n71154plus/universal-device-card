@@ -5,7 +5,7 @@
 
 Home Assistant 通用裝置卡片，支援多種裝置類型（climate、light、fan、cover、humidifier、media_player、vacuum、water_heater、generic）與彈出層控制。
 
-目前釋出版本：**v2.6.2**
+目前釋出版本：**v2.6.3**
 
 ## 預覽
 
