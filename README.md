@@ -7,6 +7,10 @@ Home Assistant 通用裝置卡片，支援多種裝置類型（climate、light�
 
 目前釋出版本：**v2.6.2**
 
+## 預覽
+
+![Universal Device Card 預覽](docs/screenshot.png)
+
 ## 透過 HACS 安裝（推薦）
 
 1. 確認已安裝 [HACS](https://hacs.xyz/)。
