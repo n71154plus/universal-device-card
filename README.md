@@ -3,13 +3,38 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/release/n71154plus/universal-device-card.svg)](https://github.com/n71154plus/universal-device-card/releases)
 
-Home Assistant Lovelace 通用裝置卡片：依實體類型自動顯示合適控制項，並可開啟彈出層查看同裝置相關實體。
+Home Assistant Lovelace **通用裝置卡片**：主畫面做常用控制；點右上角按鈕，立刻彈出**同一個實體裝置**上的其餘感測與控制項。
 
 目前釋出版本：**v2.6.3**
 
+## 精髓：右上角 → 同裝置彈出層
+
+卡片右上角的按鈕（調校圖示）不是「更多資訊」而已，而是把 **Home Assistant 裡掛在同一 device 上的其它實體**一次展開：
+
+- 左側／上方：**感測數據**（溫度、功耗、PM2.5…）
+- 右側／下方：**控制項目**（開關、模式、風向、兒童鎖…）
+
+主畫面保持乾淨；進階設定都收在彈出層，不用再翻實體清單。
+
+| 主卡片（右上角按鈕） | 點擊後的同裝置彈出層 |
+|:---:|:---:|
+| ![Climate card](docs/preview-climate.png) | ![Climate popup](docs/preview-popup-climate.png) |
+
+彈出層實際畫面（客廳冷氣：16 筆感測 · 15 項控制）：
+
+![Climate device popup](docs/preview-popup-climate-full.png)
+
+其它裝置同樣適用：
+
+| 風扇彈出層 | 窗簾彈出層 |
+|:---:|:---:|
+| ![Fan popup](docs/preview-popup-fan.png) | ![Cover popup](docs/preview-popup-cover.png) |
+
+> 可用 `disable_popup: true` 關閉；也可用 domain／entity／sensor class 過濾器決定彈出層要顯示哪些項目。
+
 ## 預覽（實際畫面）
 
-以下截圖皆取自真實 Home Assistant 儀表板（非示意合成圖）。
+以下截圖皆取自真實 Home Assistant 儀表板。
 
 ### 總覽
 
@@ -35,8 +60,6 @@ Home Assistant Lovelace 通用裝置卡片：依實體類型自動顯示合適�
 
 ### 版面模式（Layout）
 
-同一張卡片可用三種版面：
-
 | Mini | Bar |
 |:---:|:---:|
 | ![Climate Mini](docs/preview-climate-mini.png) | ![Climate Bar](docs/preview-climate-bar.png) |
@@ -46,9 +69,9 @@ Home Assistant Lovelace 通用裝置卡片：依實體類型自動顯示合適�
 
 ## 功能說明
 
+- **同裝置彈出層（核心）**：右上角按鈕展開同一 device 的感測與控制；支援過濾器
 - **自動適配裝置類型**：`climate`、`light`、`fan`、`cover`、`media_player`、`vacuum`、`water_heater`、`humidifier`、以及其他通用實體
 - **三種版面**：`standard`（完整控制）、`mini`（精簡）、`bar`（單列長條，適合列表）
-- **彈出層**：點擊設定圖示可開啟 popup，顯示同裝置相關 sensor／switch（可用過濾器限制）
 - **多語系**：`auto` / `zh-TW` / `zh-CN` / `en` / `ja`
 - **效能選項**：`animations`、`performance_mode`（關閉動畫）
 
@@ -92,6 +115,8 @@ type: custom:universal-device-card
 entity: climate.living_room
 ```
 
+點右上角按鈕即可開啟該裝置彈出層。
+
 ### 完整範例
 
 ```yaml
@@ -99,25 +124,25 @@ type: custom:universal-device-card
 entity: climate.living_room
 layout: standard          # standard | mini | bar
 language: zh-TW           # auto | en | zh-TW | zh-CN | ja
-disable_popup: false      # true = 停用彈出層
+disable_popup: false      # true = 關閉同裝置彈出層
 animations: true
-performance_mode: false   # true = 關閉動畫（較省資源）
-show_buttons:             # 主畫面額外顯示的 button 實體
+performance_mode: false
+show_buttons:
   - button.ac_eco
   - button.ac_sleep
 ```
 
 ### 彈出層過濾（可選）
 
-用逗號分隔多個值：
+只保留你想在彈出層看到的項目：
 
 ```yaml
 type: custom:universal-device-card
 entity: climate.living_room
 exclude_domains: binary_sensor,button
-include_domains: sensor,switch,select
+include_domains: sensor,switch,select,number
 exclude_entities: sensor.ac_debug
-include_sensor_classes: temperature,humidity,power
+include_sensor_classes: temperature,humidity,power,pm25
 ```
 
 ### 選項一覽
@@ -127,7 +152,7 @@ include_sensor_classes: temperature,humidity,power
 | `entity` | （必填） | 主要裝置實體 ID |
 | `layout` | `standard` | 版面：`standard` / `mini` / `bar` |
 | `language` | `auto` | 介面語言；`auto` 跟隨 HA |
-| `disable_popup` | `false` | 停用彈出層 |
+| `disable_popup` | `false` | 停用右上角同裝置彈出層 |
 | `animations` | `true` | 啟用動畫 |
 | `performance_mode` | `false` | 效能模式（關閉動畫） |
 | `show_buttons` | `[]` | 主畫面顯示的 button 實體列表 |
