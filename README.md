@@ -3,9 +3,185 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/release/n71154plus/universal-device-card.svg)](https://github.com/n71154plus/universal-device-card/releases)
 
-Home Assistant Lovelace **通用裝置卡片**：主畫面做常用控制；點右上角按鈕，立刻彈出**同一個實體裝置**上的其餘感測與控制項。
+A Home Assistant Lovelace **universal device card**: keep everyday controls on the main card; tap the **top-right button** to open a popup with **all other sensors and controls from the same device**.
 
-目前釋出版本：**v2.6.3**
+Current release: **v2.6.4**
+
+[English](#universal-device-card) · [繁體中文](#繁體中文)
+
+---
+
+## The key idea: top-right → same-device popup
+
+The top-right tune/settings button is not just “more info”. It expands **every other entity attached to the same Home Assistant device**:
+
+- **Sensors** — temperature, power, PM2.5, and more
+- **Controls** — switches, modes, swing, child lock, and more
+
+The main card stays clean; advanced options live in the popup so you don’t dig through the entity list.
+
+| Main card (top-right button) | Same-device popup |
+|:---:|:---:|
+| ![Climate card](docs/preview-climate.png) | ![Climate popup](docs/preview-popup-climate.png) |
+
+Live popup example (living-room AC: 16 sensors · 15 controls):
+
+![Climate device popup](docs/preview-popup-climate-full.png)
+
+Works the same for other domains:
+
+| Fan popup | Cover popup |
+|:---:|:---:|
+| ![Fan popup](docs/preview-popup-fan.png) | ![Cover popup](docs/preview-popup-cover.png) |
+
+> Set `disable_popup: true` to turn it off. Use domain / entity / sensor-class filters to control what appears in the popup.
+
+## Previews (real screenshots)
+
+All images below are captured from a live Home Assistant dashboard.
+
+### Overview
+
+![Overview](docs/preview-overview.png)
+
+### By device type (`layout: standard`)
+
+| Climate | Light |
+|:---:|:---:|
+| ![Climate](docs/preview-climate.png) | ![Light](docs/preview-light.png) |
+
+| Fan | Cover |
+|:---:|:---:|
+| ![Fan](docs/preview-fan.png) | ![Cover](docs/preview-cover.png) |
+
+| Media Player | Vacuum |
+|:---:|:---:|
+| ![Media](docs/preview-media.png) | ![Vacuum](docs/preview-vacuum.png) |
+
+| Water Heater | |
+|:---:|:---:|
+| ![Water Heater](docs/preview-water-heater.png) | |
+
+### Layout modes
+
+| Mini | Bar |
+|:---:|:---:|
+| ![Climate Mini](docs/preview-climate-mini.png) | ![Climate Bar](docs/preview-climate-bar.png) |
+| ![Light Mini](docs/preview-light-mini.png) | ![Light Bar](docs/preview-light-bar.png) |
+
+![Cover Bar](docs/preview-cover-bar.png)
+
+## Features
+
+- **Same-device popup (core)** — top-right button opens sensors & controls for the same device; filterable
+- **Auto UI by domain** — `climate`, `light`, `fan`, `cover`, `media_player`, `vacuum`, `water_heater`, `humidifier`, and generic entities
+- **Three layouts** — `standard` (full), `mini` (compact), `bar` (single-row list style)
+- **i18n** — `auto` / `en` / `zh-TW` / `zh-CN` / `ja`
+- **Performance** — `animations`, `performance_mode` (disable animations)
+
+## Install with HACS (recommended)
+
+1. Install [HACS](https://hacs.xyz/) if needed
+2. HACS → **Frontend** → **⋮** → **Custom repositories**
+3. Add:
+   - **URL**: `https://github.com/n71154plus/universal-device-card`
+   - **Category**: Dashboard (Lovelace)
+4. Find **Universal Device Card** → Download / Install
+5. Reload the Home Assistant frontend
+6. Edit a dashboard → Add card → **Universal Device Card**
+
+Resource URL (usually added automatically):
+
+```text
+/hacsfiles/universal-device-card/universal-device-card.js
+```
+
+Type: **JavaScript Module**.
+
+## Manual install
+
+1. Download `dist/` from the latest [Release](https://github.com/n71154plus/universal-device-card/releases) (must include `universal-device-card.js` and `translations/`)
+2. Copy into `config/www/universal-device-card/`
+3. Add a Lovelace resource:
+
+```text
+/local/universal-device-card/universal-device-card.js
+```
+
+Type: JavaScript Module.
+
+## Configuration
+
+### Minimal
+
+```yaml
+type: custom:universal-device-card
+entity: climate.living_room
+```
+
+Tap the top-right button to open the same-device popup.
+
+### Full example
+
+```yaml
+type: custom:universal-device-card
+entity: climate.living_room
+layout: standard          # standard | mini | bar
+language: en              # auto | en | zh-TW | zh-CN | ja
+disable_popup: false      # true = disable same-device popup
+animations: true
+performance_mode: false
+show_buttons:
+  - button.ac_eco
+  - button.ac_sleep
+```
+
+### Popup filters (optional)
+
+```yaml
+type: custom:universal-device-card
+entity: climate.living_room
+exclude_domains: binary_sensor,button
+include_domains: sensor,switch,select,number
+exclude_entities: sensor.ac_debug
+include_sensor_classes: temperature,humidity,power,pm25
+```
+
+### Options
+
+| Option | Default | Description |
+|------|------|------|
+| `entity` | *(required)* | Primary entity ID |
+| `layout` | `standard` | `standard` / `mini` / `bar` |
+| `language` | `auto` | UI language; `auto` follows Home Assistant |
+| `disable_popup` | `false` | Disable the top-right same-device popup |
+| `animations` | `true` | Enable animations |
+| `performance_mode` | `false` | Performance mode (no animations) |
+| `show_buttons` | `[]` | Extra `button` entities on the main card |
+| `exclude_domains` | | Domains to hide in the popup |
+| `include_domains` | | Only these domains in the popup |
+| `exclude_entities` | | Entity IDs to hide in the popup |
+| `include_entities` | | Only these entity IDs in the popup |
+| `exclude_sensor_classes` | | Sensor `device_class` values to hide |
+| `include_sensor_classes` | | Only these sensor `device_class` values |
+
+See also [info.md](info.md).
+
+## Development
+
+- Releases ship from `dist/` (JS + `translations/`)
+- `src/` is modular source reference
+- Rebuild from modules: `npm install && npm run build` (overwrites `dist/`)
+
+## License
+
+MIT
+
+---
+
+# 繁體中文
+
+Home Assistant Lovelace **通用裝置卡片**：主畫面做常用控制；點右上角按鈕，立刻彈出**同一個實體裝置**上的其餘感測與控制項。
 
 ## 精髓：右上角 → 同裝置彈出層
 
@@ -34,38 +210,7 @@ Home Assistant Lovelace **通用裝置卡片**：主畫面做常用控制；點�
 
 ## 預覽（實際畫面）
 
-以下截圖皆取自真實 Home Assistant 儀表板。
-
-### 總覽
-
-![Overview](docs/preview-overview.png)
-
-### 依裝置類型（`layout: standard`）
-
-| Climate 冷氣 | Light 燈光 |
-|:---:|:---:|
-| ![Climate](docs/preview-climate.png) | ![Light](docs/preview-light.png) |
-
-| Fan 風扇 | Cover 窗簾 |
-|:---:|:---:|
-| ![Fan](docs/preview-fan.png) | ![Cover](docs/preview-cover.png) |
-
-| Media Player 媒體 | Vacuum 掃地機 |
-|:---:|:---:|
-| ![Media](docs/preview-media.png) | ![Vacuum](docs/preview-vacuum.png) |
-
-| Water Heater 熱水器 | |
-|:---:|:---:|
-| ![Water Heater](docs/preview-water-heater.png) | |
-
-### 版面模式（Layout）
-
-| Mini | Bar |
-|:---:|:---:|
-| ![Climate Mini](docs/preview-climate-mini.png) | ![Climate Bar](docs/preview-climate-bar.png) |
-| ![Light Mini](docs/preview-light-mini.png) | ![Light Bar](docs/preview-light-bar.png) |
-
-![Cover Bar](docs/preview-cover-bar.png)
+以下截圖皆取自真實 Home Assistant 儀表板。詳見上方 [Previews](#previews-real-screenshots) 區塊（圖片共用）。
 
 ## 功能說明
 
@@ -86,7 +231,7 @@ Home Assistant Lovelace **通用裝置卡片**：主畫面做常用控制；點�
 5. 重新載入 Home Assistant 前端
 6. 儀表板 → 新增卡片 → 選擇 **Universal Device Card**
 
-HACS 資源路徑（通常會自動加入）：
+資源路徑：
 
 ```text
 /hacsfiles/universal-device-card/universal-device-card.js
@@ -98,13 +243,7 @@ HACS 資源路徑（通常會自動加入）：
 
 1. 下載最新 [Release](https://github.com/n71154plus/universal-device-card/releases) 的 `dist/`（需含 `universal-device-card.js` 與 `translations/`）
 2. 放到 `config/www/universal-device-card/`
-3. Lovelace 資源新增：
-
-```text
-/local/universal-device-card/universal-device-card.js
-```
-
-類型：JavaScript Module。
+3. Lovelace 資源新增 `/local/universal-device-card/universal-device-card.js`（JavaScript Module）
 
 ## 設定教學
 
@@ -133,8 +272,6 @@ show_buttons:
 ```
 
 ### 彈出層過濾（可選）
-
-只保留你想在彈出層看到的項目：
 
 ```yaml
 type: custom:universal-device-card

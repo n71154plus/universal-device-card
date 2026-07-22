@@ -1,5 +1,39 @@
 # Universal Device Card
 
+Home Assistant Lovelace universal device card.
+
+## The key idea
+
+Keep everyday controls on the main card. Tap the **top-right button** to open a popup with **all other sensors and controls on the same device** (switches, modes, swing, power, etc.) — no more digging through the entity list.
+
+Disable with `disable_popup`, or filter popup contents by domain / entity / sensor class.
+
+## Supported domains
+
+- climate, light, fan, cover, media_player, vacuum, water_heater, humidifier, generic
+
+## Install
+
+1. Install [HACS](https://hacs.xyz/)
+2. Custom repository: `https://github.com/n71154plus/universal-device-card` (Dashboard)
+3. Resource: `/hacsfiles/universal-device-card/universal-device-card.js` (JavaScript Module)
+
+## Quick config
+
+```yaml
+type: custom:universal-device-card
+entity: climate.living_room
+layout: standard   # standard | mini | bar
+language: en
+disable_popup: false
+```
+
+Full docs and live screenshots (including the popup): [README](README.md).
+
+---
+
+# 繁體中文
+
 Home Assistant 通用裝置卡片。
 
 ## 精髓
@@ -16,14 +50,14 @@ Home Assistant 通用裝置卡片。
 
 1. 安裝 [HACS](https://hacs.xyz/)
 2. 自訂儲存庫：`https://github.com/n71154plus/universal-device-card`（Dashboard）
-3. 安裝後資源：`/hacsfiles/universal-device-card/universal-device-card.js`（JavaScript Module）
+3. 資源：`/hacsfiles/universal-device-card/universal-device-card.js`（JavaScript Module）
 
 ## 快速設定
 
 ```yaml
 type: custom:universal-device-card
 entity: climate.living_room
-layout: standard   # standard | mini | bar
+layout: standard
 language: zh-TW
 disable_popup: false
 ```
