@@ -1,7 +1,7 @@
 {
   "name": "universal-device-card",
-  "version": "2.7.0",
-  "description": "N71154 Device Card for Home Assistant — same-device popup for climate, light, fan, cover, media, vacuum and more",
+  "version": "2.7.1",
+  "description": "Device Hub Card for Home Assistant — same-device popup for climate, light, fan, cover, media, vacuum and more",
   "type": "module",
   "scripts": {
     "build": "rollup -c && node scripts/copy-translations.cjs && node scripts/copy-root.cjs",

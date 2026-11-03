@@ -1,17 +1,17 @@
 import { UniversalDeviceCard } from './UniversalDeviceCard.js';
 import { UniversalDeviceCardEditor } from './UniversalDeviceCardEditor.js';
 
-if (!customElements.get('n71154-device-card')) {
-  customElements.define('n71154-device-card', UniversalDeviceCard);
+if (!customElements.get('device-hub-card')) {
+  customElements.define('device-hub-card', UniversalDeviceCard);
 }
-if (!customElements.get('n71154-device-card-editor')) {
-  customElements.define('n71154-device-card-editor', UniversalDeviceCardEditor);
+if (!customElements.get('device-hub-card-editor')) {
+  customElements.define('device-hub-card-editor', UniversalDeviceCardEditor);
 }
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: 'n71154-device-card',
-  name: 'N71154 Device Card',
+  type: 'device-hub-card',
+  name: 'Device Hub Card',
   description:
     'Universal Lovelace card with a same-device popup for sensors and controls (climate, light, fan, cover, media, vacuum, and more).',
   preview: true,
@@ -19,7 +19,7 @@ window.customCards.push({
 });
 
 console.info(
-  '%c N71154-DEVICE-CARD %c v2.7.0 ',
+  '%c DEVICE-HUB-CARD %c v2.7.1 ',
   'color: white; background: #03a9f4; font-weight: 700;',
   'color: #03a9f4; background: white; font-weight: 700;'
 );

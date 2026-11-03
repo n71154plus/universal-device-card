@@ -1,4 +1,4 @@
-# N71154 Device Card
+# Device Hub Card
 
 Home Assistant Lovelace universal device card.
 
@@ -21,7 +21,7 @@ Disable with `disable_popup`, or filter popup contents by domain / entity / sens
 ## Quick config
 
 ```yaml
-type: custom:n71154-device-card
+type: custom:device-hub-card
 entity: climate.living_room
 layout: standard   # standard | mini | bar
 language: en
@@ -55,7 +55,7 @@ Home Assistant 通用裝置卡片。
 ## 快速設定
 
 ```yaml
-type: custom:n71154-device-card
+type: custom:device-hub-card
 entity: climate.living_room
 layout: standard
 language: zh-TW

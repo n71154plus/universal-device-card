@@ -214,7 +214,7 @@ export class UniversalDeviceCard extends LitElement {
   }
 
   static getConfigElement() {
-    return document.createElement("n71154-device-card-editor");
+    return document.createElement("device-hub-card-editor");
   }
 
   static getStubConfig() {

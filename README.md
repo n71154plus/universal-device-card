@@ -1,7 +1,6 @@
-# N71154 Device Card
+# Device Hub Card
 
-> Lovelace type: **`custom:n71154-device-card`**  
-> Unique custom element name (avoids colliding with other HACS cards that register `universal-device-card`).
+> Lovelace type: **`custom:device-hub-card`**
 
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
@@ -9,7 +8,7 @@
 
 A Home Assistant Lovelace **universal device card**: keep everyday controls on the main card; tap the **top-right button** to open a popup with **all other sensors and controls from the same device**.
 
-Current release: **v2.7.0**
+Current release: **v2.7.1**
 
 [English](#universal-device-card) · [繁體中文](#繁體中文)
 
@@ -76,15 +75,24 @@ All images below are captured from a live Home Assistant dashboard.
 ![Cover Bar](docs/preview-cover-bar.png)
 
 
-## Migrating from `custom:universal-device-card`
+## Card type
 
-Starting with **v2.7.0**, the custom element was renamed to **`custom:n71154-device-card`** so it no longer collides with [`RayzorST/Universal-Device-Card`](https://github.com/RayzorST/Universal-Device-Card) in the HACS catalog. Update every card config:
+Lovelace type: **`custom:device-hub-card`**
+
+This unique element name avoids colliding with [`RayzorST/Universal-Device-Card`](https://github.com/RayzorST/Universal-Device-Card) (`universal-device-card`) in the HACS catalog.
 
 ```yaml
-type: custom:n71154-device-card
+type: custom:device-hub-card
 ```
 
 The HACS repository path and resource filename (`universal-device-card.js`) are unchanged.
+
+### Migrating from older type names
+
+| Old | New |
+|---|---|
+| `custom:universal-device-card` | `custom:device-hub-card` |
+| `custom:n71154-device-card` | `custom:device-hub-card` |
 
 ## Features
 
@@ -130,7 +138,7 @@ Type: JavaScript Module.
 ### Minimal
 
 ```yaml
-type: custom:n71154-device-card
+type: custom:device-hub-card
 entity: climate.living_room
 ```
 
@@ -139,7 +147,7 @@ Tap the top-right button to open the same-device popup.
 ### Full example
 
 ```yaml
-type: custom:n71154-device-card
+type: custom:device-hub-card
 entity: climate.living_room
 layout: standard          # standard | mini | bar
 language: en              # auto | en | zh-TW | zh-CN | ja
@@ -154,7 +162,7 @@ show_buttons:
 ### Popup filters (optional)
 
 ```yaml
-type: custom:n71154-device-card
+type: custom:device-hub-card
 entity: climate.living_room
 exclude_domains: binary_sensor,button
 include_domains: sensor,switch,select,number
@@ -265,7 +273,7 @@ Home Assistant Lovelace **通用裝置卡片**：主畫面做常用控制；點�
 ### 最簡設定
 
 ```yaml
-type: custom:n71154-device-card
+type: custom:device-hub-card
 entity: climate.living_room
 ```
 
@@ -274,7 +282,7 @@ entity: climate.living_room
 ### 完整範例
 
 ```yaml
-type: custom:n71154-device-card
+type: custom:device-hub-card
 entity: climate.living_room
 layout: standard          # standard | mini | bar
 language: zh-TW           # auto | en | zh-TW | zh-CN | ja
@@ -289,7 +297,7 @@ show_buttons:
 ### 彈出層過濾（可選）
 
 ```yaml
-type: custom:n71154-device-card
+type: custom:device-hub-card
 entity: climate.living_room
 exclude_domains: binary_sensor,button
 include_domains: sensor,switch,select,number
