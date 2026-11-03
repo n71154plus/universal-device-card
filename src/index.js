@@ -1,20 +1,25 @@
 import { UniversalDeviceCard } from './UniversalDeviceCard.js';
 import { UniversalDeviceCardEditor } from './UniversalDeviceCardEditor.js';
 
-customElements.define('universal-device-card', UniversalDeviceCard);
-customElements.define('universal-device-card-editor', UniversalDeviceCardEditor);
+if (!customElements.get('n71154-device-card')) {
+  customElements.define('n71154-device-card', UniversalDeviceCard);
+}
+if (!customElements.get('n71154-device-card-editor')) {
+  customElements.define('n71154-device-card-editor', UniversalDeviceCardEditor);
+}
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: 'universal-device-card',
-  name: 'Universal Device Card',
-  description: '通用設備卡片 - 支援 Climate、Light、Fan、Cover 等多種設備類型',
+  type: 'n71154-device-card',
+  name: 'N71154 Device Card',
+  description:
+    'Universal Lovelace card with a same-device popup for sensors and controls (climate, light, fan, cover, media, vacuum, and more).',
   preview: true,
-  documentationURL: 'https://github.com/your-repo/universal-device-card',
+  documentationURL: 'https://github.com/n71154plus/universal-device-card',
 });
 
 console.info(
-  '%c UNIVERSAL-DEVICE-CARD %c v2.1 ',
+  '%c N71154-DEVICE-CARD %c v2.7.0 ',
   'color: white; background: #03a9f4; font-weight: 700;',
   'color: #03a9f4; background: white; font-weight: 700;'
 );

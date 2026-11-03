@@ -55,12 +55,15 @@ export function renderControlAction(ctx, ent, domain) {
   }
 }
 
+function createHaIcon(icon) {
+  const el = document.createElement('ha-icon');
+  if (icon) el.setAttribute('icon', icon);
+  return el;
+}
+
 /**
  * Populate a DOM container with control UI (for imperative popup).
- * @param {HTMLElement} container
- * @param {object} ent
- * @param {string} domain
- * @param {{ toggle: (id?: string) => void, setSelect: (id: string, opt: string) => void, adjustNumber: (id: string, delta: number) => void, pressButton: (id: string) => void, isEntityAvailable: (ent: object) => boolean }} ctx
+ * Uses textContent / setAttribute only — never innerHTML with entity data.
  */
 export function populateControlAction(container, ent, domain, ctx) {
   const isAvailable = ctx.isEntityAvailable(ent);
@@ -92,13 +95,23 @@ export function populateControlAction(container, ent, domain, ctx) {
     case 'input_number': {
       const numControl = document.createElement('div');
       numControl.className = 'number-control';
-      numControl.innerHTML = `
-        <button ${!isAvailable ? 'disabled' : ''}><ha-icon icon="mdi:minus"></ha-icon></button>
-        <span>${ent.state}</span>
-        <button ${!isAvailable ? 'disabled' : ''}><ha-icon icon="mdi:plus"></ha-icon></button>
-      `;
-      numControl.querySelectorAll('button')[0].addEventListener('click', () => isAvailable && ctx.adjustNumber(ent.entity_id, -1));
-      numControl.querySelectorAll('button')[1].addEventListener('click', () => isAvailable && ctx.adjustNumber(ent.entity_id, 1));
+
+      const minus = document.createElement('button');
+      if (!isAvailable) minus.disabled = true;
+      minus.appendChild(createHaIcon('mdi:minus'));
+      minus.addEventListener('click', () => isAvailable && ctx.adjustNumber(ent.entity_id, -1));
+
+      const value = document.createElement('span');
+      value.textContent = ent.state == null ? '' : String(ent.state);
+
+      const plus = document.createElement('button');
+      if (!isAvailable) plus.disabled = true;
+      plus.appendChild(createHaIcon('mdi:plus'));
+      plus.addEventListener('click', () => isAvailable && ctx.adjustNumber(ent.entity_id, 1));
+
+      numControl.appendChild(minus);
+      numControl.appendChild(value);
+      numControl.appendChild(plus);
       container.appendChild(numControl);
       break;
     }
@@ -106,12 +119,16 @@ export function populateControlAction(container, ent, domain, ctx) {
       const btn = document.createElement('button');
       btn.className = 'action-btn';
       btn.disabled = !isAvailable;
-      btn.innerHTML = '<ha-icon icon="mdi:gesture-tap"></ha-icon>';
+      btn.appendChild(createHaIcon('mdi:gesture-tap'));
       btn.addEventListener('click', () => isAvailable && ctx.pressButton(ent.entity_id));
       container.appendChild(btn);
       break;
     }
-    default:
-      container.innerHTML = `<span class="state-text">${ent.state}</span>`;
+    default: {
+      const span = document.createElement('span');
+      span.className = 'state-text';
+      span.textContent = ent.state == null ? '' : String(ent.state);
+      container.appendChild(span);
+    }
   }
 }

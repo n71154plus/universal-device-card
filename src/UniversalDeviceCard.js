@@ -6,6 +6,7 @@ import { getDomainIcon, getClimateIcon, getFanModeLabel, getFanPresetLabel, getS
 import { createHassServices } from './services/hass-services.js';
 import { renderControlAction, populateControlAction } from './control-actions/index.js';
 import { getPopupStyles } from './popup/popup.js';
+import { renderPopupToPortal, createControlRow, getPopupDeviceTitle } from './popup/render-popup.js';
 import { DEVICE_RENDERERS } from './renderers/index.js';
 
 export class UniversalDeviceCard extends LitElement {
@@ -70,6 +71,7 @@ export class UniversalDeviceCard extends LitElement {
 
   // 創建掛載到 body 的 portal 容器
   _createPopupPortal() {
+    if (this.config?.disable_popup === true) return;
     if (!this._popupPortal) {
       this._popupPortal = document.createElement('div');
       this._popupPortal.className = 'udc-popup-portal';
@@ -107,9 +109,80 @@ export class UniversalDeviceCard extends LitElement {
   }
 
   _removePopupPortal() {
+    this._lockPopupScroll(false);
+    this._unbindPopupSheetGestures();
     if (this._popupPortal && this._popupPortal.parentNode) {
       this._popupPortal.parentNode.removeChild(this._popupPortal);
       this._popupPortal = null;
+    }
+  }
+
+  _closePopup() {
+    this._showPopup = false;
+    this._lockPopupScroll(false);
+    this._unbindPopupSheetGestures();
+    this.requestUpdate();
+  }
+
+  _lockPopupScroll(lock) {
+    try {
+      document.documentElement.style.overflow = lock ? 'hidden' : '';
+      document.body.style.overflow = lock ? 'hidden' : '';
+    } catch (_e) {
+      /* ignore */
+    }
+  }
+
+  _bindPopupSheetGestures(sheet, headerEl) {
+    if (!sheet || (window.matchMedia && !window.matchMedia('(max-width: 767px)').matches)) return;
+    this._unbindPopupSheetGestures();
+    const handle = headerEl || sheet.querySelector('.popup-header') || sheet;
+    let startY = 0;
+    let deltaY = 0;
+    let dragging = false;
+
+    const onStart = (ev) => {
+      const point = ev.touches ? ev.touches[0] : ev;
+      startY = point.clientY;
+      deltaY = 0;
+      dragging = true;
+      sheet.classList.add('is-dragging');
+    };
+    const onMove = (ev) => {
+      if (!dragging) return;
+      const point = ev.touches ? ev.touches[0] : ev;
+      deltaY = Math.max(0, point.clientY - startY);
+      sheet.style.transform = `translateY(${deltaY}px)`;
+    };
+    const onEnd = () => {
+      if (!dragging) return;
+      dragging = false;
+      sheet.classList.remove('is-dragging');
+      if (deltaY > 100 || deltaY > sheet.offsetHeight * 0.25) {
+        sheet.style.transform = 'translateY(110%)';
+        setTimeout(() => this._closePopup(), 150);
+      } else {
+        sheet.style.transform = '';
+        deltaY = 0;
+      }
+    };
+
+    handle.addEventListener('touchstart', onStart, { passive: true });
+    window.addEventListener('touchmove', onMove, { passive: true });
+    window.addEventListener('touchend', onEnd);
+    window.addEventListener('touchcancel', onEnd);
+    this._popupGestureCleanup = () => {
+      handle.removeEventListener('touchstart', onStart);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onEnd);
+      window.removeEventListener('touchcancel', onEnd);
+    };
+  }
+
+  _unbindPopupSheetGestures() {
+    if (typeof this._popupGestureCleanup === 'function') {
+      this._popupGestureCleanup();
+      this._popupGestureCleanup = null;
     }
   }
 
@@ -141,7 +214,7 @@ export class UniversalDeviceCard extends LitElement {
   }
 
   static getConfigElement() {
-    return document.createElement("universal-device-card-editor");
+    return document.createElement("n71154-device-card-editor");
   }
 
   static getStubConfig() {
@@ -150,8 +223,58 @@ export class UniversalDeviceCard extends LitElement {
       layout: "standard",
       language: "auto",
       disable_popup: false,
-      show_buttons: []
+      show_buttons: [],
+      animations: false,
+      performance_mode: false,
     };
+  }
+
+  getCardSize() {
+    const layout = this.config?.layout || 'standard';
+    if (layout === 'bar') return 1;
+    if (layout === 'mini') return 2;
+    return 3;
+  }
+
+  shouldUpdate(changed) {
+    if (changed.has('config')) {
+      this._relatedEntitiesCache = null;
+      return true;
+    }
+    for (const key of [
+      '_showPopup',
+      '_showTextPopup',
+      '_popupText',
+      '_fanModeExpanded',
+      '_massQueueExpanded',
+      '_massLibraryExpanded',
+      '_massSearchExpanded',
+      '_massSearchQuery',
+      '_massQueueItems',
+      '_massLibraryItems',
+      '_massSearchResults',
+      '_massSearchLoading',
+      '_massQueueLoading',
+      '_massLibraryLoading',
+      '_translations',
+    ]) {
+      if (changed.has(key)) return true;
+    }
+    if (!this.hass || !this.config?.entity) return false;
+    if (!changed.has('hass')) return false;
+    const entityId = this.config.entity;
+    const oldHass = changed.get('hass');
+    if (!oldHass) return true;
+    if (oldHass.states[entityId] !== this.hass.states[entityId]) return true;
+    for (const btn of this.config.show_buttons || []) {
+      if (oldHass.states[btn] !== this.hass.states[btn]) return true;
+    }
+    if (this._showPopup && this._relatedEntitiesCache) {
+      for (const ent of this._relatedEntitiesCache) {
+        if (oldHass.states[ent.entity_id] !== this.hass.states[ent.entity_id]) return true;
+      }
+    }
+    return false;
   }
 
   // ????桀???遴竣?
@@ -279,129 +402,28 @@ export class UniversalDeviceCard extends LitElement {
   }
 
   _updatePopupPortal() {
+    if (this.config?.disable_popup === true) return;
+    if (!this._popupPortal && this._showPopup) this._createPopupPortal();
     if (!this._popupPortal) return;
 
     if (this._showPopup && !this.config.disable_popup) {
-      // ?賹?????哨?颲??銋拙?鞈???popup
       this._popupPortal.style.pointerEvents = 'auto';
-      
-      // ?皝???popup HTML ????portal
       this._renderPopupToPortal();
     } else {
       this._popupPortal.style.pointerEvents = 'none';
-      // 只移除 overlay，保留 portal 內的 <style>，否則下次開啟會沒有 CSS
+      this._lockPopupScroll(false);
+      this._unbindPopupSheetGestures();
       const overlay = this._popupPortal.querySelector('.popup-overlay');
       if (overlay) overlay.remove();
     }
   }
 
   _renderPopupToPortal() {
-    const related = this._getRelatedEntities();
-    const sensors = related.filter(e => e.entity_id.startsWith('sensor'));
-    const controls = related.filter(e => !e.entity_id.startsWith('sensor'));
-
-    // ?? overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'popup-overlay';
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) {
-        this._showPopup = false;
-        this.requestUpdate();
-      }
-    });
-
-    // ?? content
-    const content = document.createElement('div');
-    const hideScrollbar = this.config?.hide_popup_scrollbar === true;
-    content.className = hideScrollbar ? 'popup-content hide-scrollbar' : 'popup-content';
-    content.addEventListener('click', (e) => e.stopPropagation());
-
-    // ?? header
-    const header = document.createElement('div');
-    header.className = 'popup-header';
-    header.innerHTML = `
-      <div class="popup-drag-handle"></div>
-      <ha-icon class="close-btn" icon="mdi:close"></ha-icon>
-    `;
-    header.querySelector('.close-btn').addEventListener('click', () => {
-      this._showPopup = false;
-      this.requestUpdate();
-    });
-
-    content.appendChild(header);
-
-    // ??? sensor chips
-    if (sensors.length > 0) {
-      const chipsContainer = document.createElement('div');
-      chipsContainer.className = 'chips-container';
-      
-      sensors.forEach(s => {
-        const isAvailable = this._isEntityAvailable(s);
-        const chip = document.createElement('div');
-        chip.className = `chip ${!isAvailable ? 'chip-unavailable' : ''}`;
-        chip.innerHTML = `
-          <ha-icon icon="${s.attributes.icon || 'mdi:information-outline'}"></ha-icon>
-          <span>${isAvailable ? `${s.state} ${s.attributes.unit_of_measurement || ''}` : this._t('unavailable')}</span>
-        `;
-        chipsContainer.appendChild(chip);
-      });
-      
-      content.appendChild(chipsContainer);
-    }
-
-    // ??? controls
-    if (controls.length > 0) {
-      const controlsList = document.createElement('div');
-      controlsList.className = 'controls-list';
-      
-      controls.forEach(ent => {
-        const controlCard = this._createControlCardElement(ent);
-        controlsList.appendChild(controlCard);
-      });
-      
-      content.appendChild(controlsList);
-    } else {
-      const noControls = document.createElement('div');
-      noControls.className = 'no-controls';
-      noControls.textContent = this._t('no_controls');
-      content.appendChild(noControls);
-    }
-
-    overlay.appendChild(content);
-    // 只移除舊的 overlay，不要用 innerHTML = ''，否則會一併清掉 portal 內的 <style> 導致 CSS 失效
-    const existing = this._popupPortal.querySelector('.popup-overlay');
-    if (existing) existing.remove();
-    this._popupPortal.appendChild(overlay);
+    renderPopupToPortal(this, { getDomainIcon });
   }
 
   _createControlCardElement(ent) {
-    const domain = ent.entity_id.split('.')[0];
-    const isAvailable = this._isEntityAvailable(ent);
-
-    const card = document.createElement('div');
-    card.className = `control-card ${!isAvailable ? 'control-card-unavailable' : ''}`;
-    
-    const headerDiv = document.createElement('div');
-    headerDiv.className = 'control-header';
-    headerDiv.innerHTML = `
-      <ha-icon icon="${ent.attributes.icon || getDomainIcon(domain)}"></ha-icon>
-      <span>${ent.attributes.friendly_name}</span>
-      ${!isAvailable ? `<span class="unavailable-badge">${this._t('unavailable')}</span>` : ''}
-    `;
-    
-    const actionDiv = document.createElement('div');
-    actionDiv.className = 'control-action';
-    
-    if (isAvailable) {
-      this._populateControlAction(actionDiv, ent, domain);
-    } else {
-      actionDiv.innerHTML = `<span class="state-text unavailable-text">${ent.state}</span>`;
-    }
-    
-    card.appendChild(headerDiv);
-    card.appendChild(actionDiv);
-    
-    return card;
+    return createControlRow(this, ent, getPopupDeviceTitle(this), getDomainIcon);
   }
 
   _populateControlAction(container, ent, domain) {
@@ -469,42 +491,6 @@ export class UniversalDeviceCard extends LitElement {
     `;
   }
 
-  _renderPopup() {
-    const related = this._getRelatedEntities();
-    const sensors = related.filter(e => e.entity_id.startsWith('sensor'));
-    const controls = related.filter(e => !e.entity_id.startsWith('sensor'));
-
-    return html`
-      <div class="popup-overlay" @click="${() => this._showPopup = false}">
-        <div class="popup-content" @click="${(e) => e.stopPropagation()}">
-          <div class="popup-header">
-            <div class="popup-drag-handle"></div>
-            <ha-icon class="close-btn" icon="mdi:close" @click="${() => this._showPopup = false}"></ha-icon>
-          </div>
-          
-          ${sensors.length > 0 ? html`
-            <div class="chips-container">
-              ${sensors.map(s => {
-                const isAvailable = this._isEntityAvailable(s);
-                return html`
-                  <div class="chip ${!isAvailable ? 'chip-unavailable' : ''}">
-                    <ha-icon icon="${s.attributes.icon || 'mdi:information-outline'}"></ha-icon>
-                    <span>${isAvailable ? `${s.state} ${s.attributes.unit_of_measurement || ''}` : this._t('unavailable')}</span>
-                  </div>
-                `;
-              })}
-            </div>
-          ` : ''}
-
-          ${controls.length > 0 ? html`
-            <div class="controls-list">
-              ${controls.map(ent => this._renderControlCard(ent))}
-            </div>
-          ` : html`<div class="no-controls">${this._t('no_controls')}</div>`}
-        </div>
-      </div>
-    `;
-  }
 
   _renderControlCard(ent) {
     const domain = ent.entity_id.split('.')[0];
